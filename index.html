@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uzhavan Nanban — Smart Farm Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green-50: #EAF3DE;
+    --green-100: #C0DD97;
+    --green-200: #97C459;
+    --green-400: #639922;
+    --green-600: #3B6D11;
+    --green-800: #27500A;
+    --green-900: #173404;
+    --amber-50: #FAEEDA;
+    --amber-100: #FAC775;
+    --amber-200: #EF9F27;
+    --amber-400: #BA7517;
+    --amber-600: #854F0B;
+    --teal-50: #E1F5EE;
+    --teal-100: #9FE1CB;
+    --teal-400: #1D9E75;
+    --teal-600: #0F6E56;
+    --blue-50: #E6F1FB;
+    --blue-400: #378ADD;
+    --blue-600: #185FA5;
+    --red-50: #FCEBEB;
+    --red-400: #E24B4A;
+    --red-600: #A32D2D;
+    --sidebar-w: 260px;
+    --header-h: 64px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f5f7f2;
+    color: #1a2210;
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* SIDEBAR */
+  aside {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--green-900);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 100;
+  }
+
+  .sidebar-brand {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sidebar-brand .logo-icon {
+    width: 40px; height: 40px;
+    background: var(--green-400);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .sidebar-brand h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    color: #fff;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+  }
+
+  .sidebar-brand p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    margin-top: 3px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-nav { padding: 16px 12px; flex: 1; }
+
+  .nav-section-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    padding: 0 8px;
+    margin: 16px 0 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+    font-weight: 400;
+    transition: background 0.15s, color 0.15s;
+    text-decoration: none;
+    margin-bottom: 2px;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .nav-item:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+  .nav-item.active { background: var(--green-600); color: #fff; font-weight: 500; }
+
+  .nav-item .nav-icon { font-size: 18px; flex-shrink: 0; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--amber-200);
+    color: var(--amber-600);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  .sidebar-footer {
+    padding: 16px 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .weather-widget {
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+
+  .weather-widget .w-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .weather-widget .w-loc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 6px;
+  }
+
+  .weather-item { text-align: center; }
+  .weather-item .val { font-size: 16px; font-weight: 600; color: #fff; }
+  .weather-item .label { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+
+  /* MAIN */
+  main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOPBAR */
+  header {
+    height: var(--header-h);
+    background: #fff;
+    border-bottom: 1px solid #e8ede0;
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .header-greeting { flex: 1; }
+  .header-greeting h2 { font-size: 16px; font-weight: 600; color: #1a2210; }
+  .header-greeting p { font-size: 13px; color: #6b7c5a; margin-top: 1px; }
+
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+
+  .lang-switch {
+    display: flex;
+    border: 1px solid #d4dfc5;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .lang-btn {
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6b7c5a;
+    transition: background 0.12s;
+    font-family: inherit;
+  }
+
+  .lang-btn.active { background: var(--green-400); color: #fff; }
+  .lang-btn:hover:not(.active) { background: var(--green-50); }
+
+  .alert-banner {
+    background: #fff8ed;
+    border: 1px solid var(--amber-100);
+    border-left: 4px solid var(--amber-200);
+    border-radius: 8px;
+    padding: 9px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--amber-600);
+    cursor: pointer;
+  }
+
+  .alert-banner .close-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--amber-400);
+    padding: 0 4px;
+  }
+
+  /* CONTENT AREA */
+  .content { padding: 32px 36px; flex: 1; }
+
+  /* QUICK STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: #fff;
+    border: 1px solid #e8ede0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .stat-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .stat-icon.green { background: var(--green-50); color: var(--green-600); }
+  .stat-icon.amber { background: var(--amber-50); color: var(--amber-400); }
+  .stat-icon.teal { background: var(--teal-50); color: var(--teal-600); }
+  .stat-icon.blue { background: var(--blue-50); color: var(--blue-600); }
+
+  .stat-info .val { font-size: 22px; font-weight: 700; color: #1a2210; }
+  .stat-info .lbl { font-size: 12px; color: #6b7c5a; margin-top: 3px; }
+  .stat-info .sub { font-size: 11px; color: #a3b88a; margin-top: 2px; }
+
+  /* TWO COLUMNS LAYOUT */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* WIZARD PANEL */
+  .panel {
+    background: #fff;
+    border: 1px solid #e8ede0;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e8ede0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-header h3 { font-size: 15px; font-weight: 600; color: #1a2210; }
+  .panel-header p { font-size: 12px; color: #6b7c5a; margin-top: 2px; }
+
+  /* STEP PROGRESS BAR */
+  .step-bar {
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    margin: 20px 0 0;
+    gap: 0;
+  }
+
+  .step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+  }
+
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: #e8ede0;
+    z-index: 0;
+  }
+
+  .step-item.done:not(:last-child)::after,
+  .step-item.active:not(:last-child)::after {
+    background: var(--green-200);
+  }
+
+  .step-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #e8ede0;
+    color: #a3b88a;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+    position: relative;
+    z-index: 1;
+    transition: background 0.2s;
+  }
+
+  .step-item.done .step-dot { background: var(--green-400); color: #fff; }
+  .step-item.active .step-dot { background: var(--green-600); color: #fff; box-shadow: 0 0 0 4px var(--green-50); }
+
+  .step-lbl { font-size: 10px; color: #a3b88a; margin-top: 5px; text-align: center; white-space: nowrap; }
+  .step-item.active .step-lbl { color: var(--green-600); font-weight: 500; }
+
+  /* FORM */
+  .form-body { padding: 24px; }
+
+  .form-step { display: none; }
+  .form-step.active { display: block; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group:last-child { margin-bottom: 0; }
+
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #4a5c35;
+    margin-bottom: 6px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 9px 14px;
+    background: #f9faf6;
+    border: 1px solid #d4dfc5;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a2210;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    appearance: none;
+  }
+
+  .form-control:focus { border-color: var(--green-400); background: #fff; }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .slider-row label { font-size: 13px; color: #4a5c35; width: 160px; flex-shrink: 0; }
+
+  .slider-row input[type=range] {
+    flex: 1;
+    height: 4px;
+    accent-color: var(--green-400);
+    cursor: pointer;
+  }
+
+  .slider-val {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green-600);
+    min-width: 50px;
+    text-align: right;
+  }
+
+  .crop-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .crop-btn {
+    border: 1.5px solid #d4dfc5;
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+    background: #f9faf6;
+    transition: border-color 0.15s, background 0.15s;
+    font-family: inherit;
+  }
+
+  .crop-btn:hover { border-color: var(--green-200); background: var(--green-50); }
+  .crop-btn.selected { border-color: var(--green-400); background: var(--green-50); }
+  .crop-btn .crop-emoji { font-size: 26px; display: block; margin-bottom: 4px; }
+  .crop-btn .crop-name { font-size: 11px; color: #4a5c35; font-weight: 500; }
+
+  /* FORM ACTIONS */
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-top: 1px solid #e8ede0;
+    background: #fbfcf9;
+  }
+
+  .btn {
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary { background: var(--green-600); color: #fff; }
+  .btn-primary:hover { background: var(--green-800); }
+  .btn-secondary { background: #f0f4e8; color: #4a5c35; border: 1px solid #d4dfc5; }
+  .btn-secondary:hover { background: #e4ebcf; }
+  .btn-danger { background: var(--green-400); color: #fff; font-size: 15px; padding: 12px 28px; }
+  .btn-danger:hover { background: var(--green-600); }
+
+  /* RESULT */
+  #result-section { display: none; }
+
+  .result-hero {
+    background: linear-gradient(135deg, var(--green-800) 0%, var(--green-600) 100%);
+    border-radius: 12px;
+    padding: 28px;
+    color: #fff;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .yield-big { text-align: center; }
+  .yield-big .num { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 700; line-height: 1; }
+  .yield-big .unit { font-size: 14px; color: rgba(255,255,255,0.7); margin-top: 4px; }
+  .yield-big .badge { background: rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 12px; font-size: 12px; margin-top: 8px; display: inline-block; }
+
+  .yield-details h3 { font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+
+  .yield-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .yield-meta-item .m-val { font-size: 20px; font-weight: 700; }
+  .yield-meta-item .m-lbl { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 2px; }
+
+  .confidence-bar {
+    margin-top: 14px;
+  }
+
+  .confidence-bar .bar-label { display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
+  .confidence-bar .bar-track { background: rgba(255,255,255,0.15); border-radius: 4px; height: 6px; }
+  .confidence-bar .bar-fill { background: var(--amber-200); border-radius: 4px; height: 6px; transition: width 1s ease; }
+
+  .advice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+  .advice-card {
+    background: #fff;
+    border: 1px solid #e8ede0;
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  .advice-card .ac-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .advice-card .ac-icon { font-size: 20px; }
+  .advice-card .ac-title { font-size: 13px; font-weight: 600; color: #1a2210; }
+  .advice-card .ac-body { font-size: 12px; color: #6b7c5a; line-height: 1.5; }
+
+  /* RIGHT COLUMN */
+  .right-col { display: flex; flex-direction: column; gap: 20px; }
+
+  .tip-card {
+    background: #fff;
+    border: 1px solid #e8ede0;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .tip-header {
+    background: var(--green-50);
+    border-bottom: 1px solid #d4dfc5;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tip-header .tip-icon { font-size: 18px; }
+  .tip-header h4 { font-size: 13px; font-weight: 600; color: var(--green-800); }
+  .tip-header .tip-date { margin-left: auto; font-size: 11px; color: var(--green-400); background: var(--green-100); padding: 2px 8px; border-radius: 20px; }
+
+  .tip-body { padding: 16px 18px; font-size: 13px; color: #3d5226; line-height: 1.6; }
+
+  .history-list { padding: 0 8px 8px; }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s;
+    border-bottom: 1px solid #f0f4e8;
+  }
+
+  .history-item:last-child { border-bottom: none; }
+  .history-item:hover { background: var(--green-50); }
+
+  .history-icon { font-size: 22px; flex-shrink: 0; }
+  .history-info { flex: 1; }
+  .history-info .hi-title { font-size: 13px; font-weight: 500; color: #1a2210; }
+  .history-info .hi-sub { font-size: 11px; color: #6b7c5a; margin-top: 1px; }
+  .history-yield { text-align: right; }
+  .history-yield .hy-val { font-size: 14px; font-weight: 700; color: var(--green-600); }
+  .history-yield .hy-unit { font-size: 10px; color: #a3b88a; }
+
+  /* SOIL SELECT GRID */
+  .soil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .soil-btn {
+    border: 1.5px solid #d4dfc5;
+    border-radius: 8px;
+    padding: 8px 12px;
+    text-align: left;
+    cursor: pointer;
+    background: #f9faf6;
+    font-size: 12px;
+    color: #4a5c35;
+    font-family: inherit;
+    transition: border-color 0.15s, background 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .soil-btn:hover { border-color: var(--green-200); background: var(--green-50); }
+  .soil-btn.selected { border-color: var(--green-400); background: var(--green-50); font-weight: 500; }
+
+  /* REVIEW TABLE */
+  .review-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+  .review-table td { padding: 8px 0; border-bottom: 1px solid #f0f4e8; }
+  .review-table tr:last-child td { border-bottom: none; }
+  .review-table td:first-child { color: #6b7c5a; width: 45%; }
+  .review-table td:last-child { font-weight: 500; color: #1a2210; text-align: right; }
+
+  .new-prediction-btn {
+    width: 100%;
+    padding: 11px;
+    background: none;
+    border: 1.5px dashed #d4dfc5;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #6b7c5a;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 6px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .new-prediction-btn:hover { border-color: var(--green-400); color: var(--green-600); }
+
+  @media (max-width: 1100px) {
+    .two-col { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .crop-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside>
+  <div class="sidebar-brand">
+    <div class="logo-icon">🌱</div>
+    <h1>Uzhavan Nanban</h1>
+    <p>Smart Farm Assistant</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <button class="nav-item active" onclick="showSection('predict')">
+      <span class="nav-icon">🔍</span>
+      Yield Prediction
+    </button>
+    <button class="nav-item" onclick="showSection('advice')">
+      <span class="nav-icon">💡</span>
+      Smart Advice
+    </button>
+    <button class="nav-item" onclick="showSection('pest')">
+      <span class="nav-icon">🐛</span>
+      Pest Check
+      <span class="nav-badge">Alert</span>
+    </button>
+
+    <div class="nav-section-label">Records</div>
+    <button class="nav-item" onclick="showSection('history')">
+      <span class="nav-icon">📊</span>
+      My History
+    </button>
+    <button class="nav-item" onclick="showSection('predict')">
+      <span class="nav-icon">🌾</span>
+      My Crops
+    </button>
+    <button class="nav-item">
+      <span class="nav-icon">🗺️</span>
+      Farm Map
+    </button>
+
+    <div class="nav-section-label">Tools</div>
+    <button class="nav-item" onclick="showSection('income')">
+      <span class="nav-icon">💰</span>
+      Income Calculator
+    </button>
+    <button class="nav-item">
+      <span class="nav-icon">📈</span>
+      Market Prices
+    </button>
+    <button class="nav-item">
+      <span class="nav-icon">🔮</span>
+      Season Forecast
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="weather-widget">
+      <div class="w-loc">📍 Thanjavur, TN</div>
+      <div class="w-row">
+        <div class="weather-item">
+          <div class="val">32°C</div>
+          <div class="label">Temp</div>
+        </div>
+        <div class="weather-item">
+          <div class="val">847mm</div>
+          <div class="label">Rainfall</div>
+        </div>
+        <div class="weather-item">
+          <div class="val">68%</div>
+          <div class="label">Humidity</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main>
+  <!-- TOPBAR -->
+  <header>
+    <div class="header-greeting">
+      <h2>👋 Good Morning, Farmer!</h2>
+      <p>What will you grow today? Get AI-powered yield predictions in seconds.</p>
+    </div>
+    <div class="header-actions">
+      <div class="lang-switch">
+        <button class="lang-btn active">EN</button>
+        <button class="lang-btn">தமிழ்</button>
+        <button class="lang-btn">हि</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content" id="main-content">
+
+    <!-- ALERT BANNER -->
+    <div class="alert-banner" id="pest-alert" style="margin-bottom:20px;">
+      ⚠️ <strong>Pest Risk Alert:</strong> High blast fungus risk detected for Paddy in your region this week. Consider preventive spray.
+      <button class="close-btn" onclick="document.getElementById('pest-alert').style.display='none'">✕</button>
+    </div>
+
+    <!-- QUICK STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon green">🌾</div>
+        <div class="stat-info">
+          <div class="val">4,644</div>
+          <div class="lbl">Avg Yield (kg/ha)</div>
+          <div class="sub">Last prediction · Paddy</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber">💰</div>
+        <div class="stat-info">
+          <div class="val">₹1.85L</div>
+          <div class="lbl">Estimated Income</div>
+          <div class="sub">At MSP rates</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon teal">🌿</div>
+        <div class="stat-info">
+          <div class="val">72%</div>
+          <div class="lbl">Crop Health Score</div>
+          <div class="sub">Moderate — can improve</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">📊</div>
+        <div class="stat-info">
+          <div class="val">12</div>
+          <div class="lbl">Total Predictions</div>
+          <div class="sub">This season</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TWO COLUMN -->
+    <div class="two-col">
+      <!-- WIZARD -->
+      <div>
+        <!-- WIZARD FORM PANEL -->
+        <div class="panel" id="wizard-panel">
+          <div class="panel-header">
+            <div>
+              <h3>🔍 Yield Prediction</h3>
+              <p>AI-powered harvest forecast for your farm</p>
+            </div>
+          </div>
+
+          <!-- STEP BAR -->
+          <div class="step-bar">
+            <div class="step-item active" id="step-ind-1">
+              <div class="step-dot">1</div>
+              <div class="step-lbl">Location</div>
+            </div>
+            <div class="step-item" id="step-ind-2">
+              <div class="step-dot">2</div>
+              <div class="step-lbl">Crop</div>
+            </div>
+            <div class="step-item" id="step-ind-3">
+              <div class="step-dot">3</div>
+              <div class="step-lbl">Weather</div>
+            </div>
+            <div class="step-item" id="step-ind-4">
+              <div class="step-dot">4</div>
+              <div class="step-lbl">Soil</div>
+            </div>
+            <div class="step-item" id="step-ind-5">
+              <div class="step-dot">5</div>
+              <div class="step-lbl">Review</div>
+            </div>
+          </div>
+
+          <div class="form-body">
+            <!-- STEP 1 -->
+            <div class="form-step active" id="step-1">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">📍 District</label>
+                  <select class="form-control" id="sel-district">
+                    <option>Thanjavur</option>
+                    <option>Madurai</option>
+                    <option>Coimbatore</option>
+                    <option>Trichy</option>
+                    <option>Salem</option>
+                    <option>Erode</option>
+                    <option>Tirunelveli</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">📅 Season</label>
+                  <select class="form-control" id="sel-season">
+                    <option>☀️ Kharif (June – October)</option>
+                    <option>❄️ Rabi (November – March)</option>
+                    <option>🌸 Zaid (April – May)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">📐 Farm Area (hectares)</label>
+                  <input class="form-control" type="number" id="inp-area" value="2" min="0.1" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">📅 Prediction Year</label>
+                  <select class="form-control" id="sel-year">
+                    <option>2024</option>
+                    <option selected>2025</option>
+                    <option>2026 (Future Forecast)</option>
+                    <option>2027 (Future Forecast)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 2 -->
+            <div class="form-step" id="step-2">
+              <p style="font-size:13px;color:#6b7c5a;margin-bottom:14px;">Select the crop you want to predict for:</p>
+              <div class="crop-grid" id="crop-grid">
+                <button class="crop-btn selected" data-crop="Paddy" onclick="selectCrop(this)">
+                  <span class="crop-emoji">🌾</span>
+                  <span class="crop-name">Paddy</span>
+                </button>
+                <button class="crop-btn" data-crop="Wheat" onclick="selectCrop(this)">
+                  <span class="crop-emoji">🌿</span>
+                  <span class="crop-name">Wheat</span>
+                </button>
+                <button class="crop-btn" data-crop="Maize" onclick="selectCrop(this)">
+                  <span class="crop-emoji">🌽</span>
+                  <span class="crop-name">Maize</span>
+                </button>
+                <button class="crop-btn" data-crop="Sugarcane" onclick="selectCrop(this)">
+                  <span class="crop-emoji">🎋</span>
+                  <span class="crop-name">Sugarcane</span>
+                </button>
+                <button class="crop-btn" data-crop="Cotton" onclick="selectCrop(this)">
+                  <span class="crop-emoji">🤍</span>
+                  <span class="crop-name">Cotton</span>
+                </button>
+                <button class="crop-btn" data-crop="Soybean" onclick="selectCrop(this)">
+                  <span class="crop-emoji">🟡</span>
+                  <span class="crop-name">Soybean</span>
+                </button>
+                <button class="crop-btn" data-crop="Groundnut" onclick="selectCrop(this)">
+                  <span class="crop-emoji">🥜</span>
+                  <span class="crop-name">Groundnut</span>
+                </button>
+                <button class="crop-btn" data-crop="Banana" onclick="selectCrop(this)">
+                  <span class="crop-emoji">🍌</span>
+                  <span class="crop-name">Banana</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 3 -->
+            <div class="form-step" id="step-3">
+              <p style="font-size:13px;color:#6b7c5a;margin-bottom:18px;">Adjust to match your current weather conditions:</p>
+              <div class="slider-row">
+                <label>💧 Rainfall (mm)</label>
+                <input type="range" min="0" max="2000" value="850" step="10" id="sl-rain" oninput="document.getElementById('val-rain').textContent=this.value+'mm'">
+                <span class="slider-val" id="val-rain">850mm</span>
+              </div>
+              <div class="slider-row">
+                <label>🌡️ Temperature (°C)</label>
+                <input type="range" min="10" max="45" value="28" step="1" id="sl-temp" oninput="document.getElementById('val-temp').textContent=this.value+'°C'">
+                <span class="slider-val" id="val-temp">28°C</span>
+              </div>
+              <div class="slider-row">
+                <label>💦 Humidity (%)</label>
+                <input type="range" min="20" max="100" value="65" step="1" id="sl-hum" oninput="document.getElementById('val-hum').textContent=this.value+'%'">
+                <span class="slider-val" id="val-hum">65%</span>
+              </div>
+            </div>
+
+            <!-- STEP 4 -->
+            <div class="form-step" id="step-4">
+              <p style="font-size:13px;color:#6b7c5a;margin-bottom:18px;">Enter soil test results or use default values:</p>
+              <div class="slider-row">
+                <label>🌿 Nitrogen N (kg/ha)</label>
+                <input type="range" min="0" max="200" value="80" step="5" id="sl-n" oninput="document.getElementById('val-n').textContent=this.value">
+                <span class="slider-val" id="val-n">80</span>
+              </div>
+              <div class="slider-row">
+                <label>🔵 Phosphorus P (kg/ha)</label>
+                <input type="range" min="0" max="150" value="40" step="5" id="sl-p" oninput="document.getElementById('val-p').textContent=this.value">
+                <span class="slider-val" id="val-p">40</span>
+              </div>
+              <div class="slider-row">
+                <label>🟤 Potassium K (kg/ha)</label>
+                <input type="range" min="0" max="200" value="60" step="5" id="sl-k" oninput="document.getElementById('val-k').textContent=this.value">
+                <span class="slider-val" id="val-k">60</span>
+              </div>
+              <label class="form-label" style="margin-top:4px;">🌱 Soil Type</label>
+              <div class="soil-grid" id="soil-grid">
+                <button class="soil-btn selected" onclick="selectSoil(this)">🟫 Alluvial Soil</button>
+                <button class="soil-btn" onclick="selectSoil(this)">🔴 Red Soil</button>
+                <button class="soil-btn" onclick="selectSoil(this)">⚫ Black Cotton Soil</button>
+                <button class="soil-btn" onclick="selectSoil(this)">🟠 Laterite Soil</button>
+                <button class="soil-btn" onclick="selectSoil(this)">🟡 Sandy Soil</button>
+              </div>
+            </div>
+
+            <!-- STEP 5 -->
+            <div class="form-step" id="step-5">
+              <p style="font-size:13px;color:#6b7c5a;margin-bottom:16px;">Everything looks good? Review and click Predict.</p>
+              <table class="review-table" id="review-table">
+                <tr><td>District</td><td id="rv-district">Thanjavur</td></tr>
+                <tr><td>Season</td><td id="rv-season">Kharif</td></tr>
+                <tr><td>Farm Area</td><td id="rv-area">2 ha</td></tr>
+                <tr><td>Year</td><td id="rv-year">2025</td></tr>
+                <tr><td>Crop</td><td id="rv-crop">Paddy</td></tr>
+                <tr><td>Rainfall</td><td id="rv-rain">850 mm</td></tr>
+                <tr><td>Temperature</td><td id="rv-temp">28°C</td></tr>
+                <tr><td>Humidity</td><td id="rv-hum">65%</td></tr>
+                <tr><td>Nitrogen</td><td id="rv-n">80 kg/ha</td></tr>
+                <tr><td>Phosphorus</td><td id="rv-p">40 kg/ha</td></tr>
+                <tr><td>Potassium</td><td id="rv-k">60 kg/ha</td></tr>
+                <tr><td>Soil Type</td><td id="rv-soil">Alluvial Soil</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-secondary" id="btn-back" onclick="changeStep(-1)" style="visibility:hidden;">← Back</button>
+            <span style="font-size:12px;color:#a3b88a;" id="step-counter">Step 1 of 5</span>
+            <button class="btn btn-primary" id="btn-next" onclick="changeStep(1)">Next Step →</button>
+          </div>
+        </div>
+
+        <!-- RESULT SECTION -->
+        <div id="result-section">
+          <div class="result-hero">
+            <div class="yield-big">
+              <div class="num" id="res-yield">4,644</div>
+              <div class="unit">kg / hectare</div>
+              <div class="badge">87% Confidence</div>
+            </div>
+            <div class="yield-details">
+              <h3>Predicted Yield</h3>
+              <div class="yield-meta-grid">
+                <div class="yield-meta-item">
+                  <div class="m-val" id="res-total">9,288 kg</div>
+                  <div class="m-lbl">Total Harvest</div>
+                </div>
+                <div class="yield-meta-item">
+                  <div class="m-val" id="res-income">₹1.85L</div>
+                  <div class="m-lbl">Est. Income</div>
+                </div>
+                <div class="yield-meta-item">
+                  <div class="m-val" id="res-crop">Paddy</div>
+                  <div class="m-lbl">Crop</div>
+                </div>
+                <div class="yield-meta-item">
+                  <div class="m-val" id="res-loc">Thanjavur</div>
+                  <div class="m-lbl">District</div>
+                </div>
+              </div>
+              <div class="confidence-bar">
+                <div class="bar-label"><span>AI Confidence</span><span>87%</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:87%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="advice-grid">
+            <div class="advice-card">
+              <div class="ac-header">
+                <span class="ac-icon">💧</span>
+                <span class="ac-title">Irrigation</span>
+              </div>
+              <div class="ac-body">Current rainfall is sufficient. Supplement with 2–3 irrigations at tillering and panicle stages for optimal yield.</div>
+            </div>
+            <div class="advice-card">
+              <div class="ac-header">
+                <span class="ac-icon">🌿</span>
+                <span class="ac-title">Fertiliser</span>
+              </div>
+              <div class="ac-body">Nitrogen is moderate. Apply split doses — 50% basal, 25% at tillering, 25% at panicle initiation.</div>
+            </div>
+            <div class="advice-card">
+              <div class="ac-header">
+                <span class="ac-icon">🐛</span>
+                <span class="ac-title">Pest Management</span>
+              </div>
+              <div class="ac-body">Monitor for blast and brown plant hopper. Apply neem-based pesticide after 5 PM this week.</div>
+            </div>
+            <div class="advice-card">
+              <div class="ac-header">
+                <span class="ac-icon">📈</span>
+                <span class="ac-title">Yield Optimizer</span>
+              </div>
+              <div class="ac-body">Increasing phosphorus to 60 kg/ha could boost yield by ~8%. Soil pH adjustment may also help.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-bottom:8px;">
+            <button class="btn btn-primary" onclick="resetWizard()">🔍 New Prediction</button>
+            <button class="btn btn-secondary">📤 Share Results</button>
+            <button class="btn btn-secondary">🔊 Hear in Tamil</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-col">
+        <!-- TODAY'S TIP -->
+        <div class="tip-card">
+          <div class="tip-header">
+            <span class="tip-icon">💡</span>
+            <h4>Today's Farm Tip</h4>
+            <span class="tip-date">June 7</span>
+          </div>
+          <div class="tip-body">
+            Based on current humidity levels (68%), consider applying neem-based pesticide in the evening to prevent fungal growth. Best time: <strong>after 5 PM</strong>. Avoid spraying during peak heat hours.
+          </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>📊 Recent Predictions</h3>
+              <p>Your past harvest forecasts</p>
+            </div>
+          </div>
+          <div class="history-list">
+            <div class="history-item">
+              <div class="history-icon">🌾</div>
+              <div class="history-info">
+                <div class="hi-title">Paddy · Thanjavur</div>
+                <div class="hi-sub">Kharif 2024 · 2 ha</div>
+              </div>
+              <div class="history-yield">
+                <div class="hy-val">4,644</div>
+                <div class="hy-unit">kg/ha</div>
+              </div>
+            </div>
+            <div class="history-item">
+              <div class="history-icon">🌿</div>
+              <div class="history-info">
+                <div class="hi-title">Wheat · Madurai</div>
+                <div class="hi-sub">Rabi 2024 · 3 ha</div>
+              </div>
+              <div class="history-yield">
+                <div class="hy-val">3,210</div>
+                <div class="hy-unit">kg/ha</div>
+              </div>
+            </div>
+            <div class="history-item">
+              <div class="history-icon">🌽</div>
+              <div class="history-info">
+                <div class="hi-title">Maize · Coimbatore</div>
+                <div class="hi-sub">Kharif 2024 · 1.5 ha</div>
+              </div>
+              <div class="history-yield">
+                <div class="hy-val">5,800</div>
+                <div class="hy-unit">kg/ha</div>
+              </div>
+            </div>
+            <div class="history-item">
+              <div class="history-icon">🥜</div>
+              <div class="history-info">
+                <div class="hi-title">Groundnut · Thanjavur</div>
+                <div class="hi-sub">Zaid 2024 · 1 ha</div>
+              </div>
+              <div class="history-yield">
+                <div class="hy-val">1,950</div>
+                <div class="hy-unit">kg/ha</div>
+              </div>
+            </div>
+          </div>
+          <div style="padding:0 18px 16px;">
+            <button class="new-prediction-btn" onclick="showSection('predict')">+ Start New Prediction</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  let currentStep = 1;
+  const totalSteps = 5;
+  let selectedCrop = 'Paddy';
+  let selectedSoil = 'Alluvial Soil';
+
+  function changeStep(dir) {
+    if (currentStep === totalSteps && dir === 1) {
+      runPrediction();
+      return;
+    }
+    const next = currentStep + dir;
+    if (next < 1 || next > totalSteps) return;
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    document.getElementById('step-ind-' + currentStep).classList.remove('active');
+    if (dir === 1) document.getElementById('step-ind-' + currentStep).classList.add('done');
+    else document.getElementById('step-ind-' + currentStep).classList.remove('done');
+    currentStep = next;
+    document.getElementById('step-' + currentStep).classList.add('active');
+    document.getElementById('step-ind-' + currentStep).classList.add('active');
+    document.getElementById('step-counter').textContent = 'Step ' + currentStep + ' of ' + totalSteps;
+    document.getElementById('btn-back').style.visibility = currentStep > 1 ? 'visible' : 'hidden';
+    const nextBtn = document.getElementById('btn-next');
+    nextBtn.textContent = currentStep === totalSteps ? '✅ Predict Yield' : 'Next Step →';
+    nextBtn.className = currentStep === totalSteps ? 'btn btn-danger' : 'btn btn-primary';
+    if (currentStep === totalSteps) fillReview();
+  }
+
+  function selectCrop(el) {
+    document.querySelectorAll('.crop-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedCrop = el.dataset.crop;
+  }
+
+  function selectSoil(el) {
+    document.querySelectorAll('.soil-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedSoil = el.textContent.replace(/^[^\s]+\s/, '').trim();
+  }
+
+  function fillReview() {
+    const season = document.getElementById('sel-season').value.replace(/^[^\s]+\s/, '').replace(/\(.*\)/, '').trim();
+    document.getElementById('rv-district').textContent = document.getElementById('sel-district').value;
+    document.getElementById('rv-season').textContent = season;
+    document.getElementById('rv-area').textContent = document.getElementById('inp-area').value + ' ha';
+    document.getElementById('rv-year').textContent = document.getElementById('sel-year').value.replace(' (Future Forecast)', '');
+    document.getElementById('rv-crop').textContent = selectedCrop;
+    document.getElementById('rv-rain').textContent = document.getElementById('sl-rain').value + ' mm';
+    document.getElementById('rv-temp').textContent = document.getElementById('sl-temp').value + '°C';
+    document.getElementById('rv-hum').textContent = document.getElementById('sl-hum').value + '%';
+    document.getElementById('rv-n').textContent = document.getElementById('sl-n').value + ' kg/ha';
+    document.getElementById('rv-p').textContent = document.getElementById('sl-p').value + ' kg/ha';
+    document.getElementById('rv-k').textContent = document.getElementById('sl-k').value + ' kg/ha';
+    document.getElementById('rv-soil').textContent = selectedSoil;
+  }
+
+  function runPrediction() {
+    const rain = parseInt(document.getElementById('sl-rain').value);
+    const temp = parseInt(document.getElementById('sl-temp').value);
+    const hum = parseInt(document.getElementById('sl-hum').value);
+    const n = parseInt(document.getElementById('sl-n').value);
+    const p = parseInt(document.getElementById('sl-p').value);
+    const k = parseInt(document.getElementById('sl-k').value);
+    const area = parseFloat(document.getElementById('inp-area').value) || 2;
+    const district = document.getElementById('sel-district').value;
+
+    const baseYield = { Paddy: 4200, Wheat: 3000, Maize: 5200, Sugarcane: 72000, Cotton: 1800, Soybean: 2100, Groundnut: 1800, Banana: 28000 };
+    const base = baseYield[selectedCrop] || 3500;
+    const rainFactor = rain > 600 && rain < 1400 ? 1.08 : rain < 300 ? 0.88 : 0.95;
+    const tempFactor = temp > 20 && temp < 35 ? 1.05 : 0.92;
+    const nutrientFactor = 1 + ((n - 60) * 0.002 + (p - 30) * 0.001 + (k - 40) * 0.0005);
+    const yield_per_ha = Math.round(base * rainFactor * tempFactor * nutrientFactor);
+    const totalYield = Math.round(yield_per_ha * area);
+    const mspRates = { Paddy: 21.83, Wheat: 21.25, Maize: 18.77, Sugarcane: 3.15, Cotton: 66.20, Soybean: 43.00, Groundnut: 60.77, Banana: 15.00 };
+    const income = Math.round(totalYield * (mspRates[selectedCrop] || 20));
+    const confidence = Math.round(75 + Math.random() * 15);
+
+    document.getElementById('res-yield').textContent = yield_per_ha.toLocaleString('en-IN');
+    document.getElementById('res-total').textContent = totalYield.toLocaleString('en-IN') + ' kg';
+    document.getElementById('res-income').textContent = '₹' + (income >= 100000 ? (income / 100000).toFixed(2) + 'L' : (income / 1000).toFixed(1) + 'K');
+    document.getElementById('res-crop').textContent = selectedCrop;
+    document.getElementById('res-loc').textContent = district;
+
+    document.getElementById('wizard-panel').style.display = 'none';
+    document.getElementById('result-section').style.display = 'block';
+  }
+
+  function resetWizard() {
+    document.getElementById('wizard-panel').style.display = 'block';
+    document.getElementById('result-section').style.display = 'none';
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    document.getElementById('step-ind-' + currentStep).classList.remove('active', 'done');
+    currentStep = 1;
+    for (let i = 1; i <= totalSteps; i++) {
+      document.getElementById('step-ind-' + i).classList.remove('active', 'done');
+    }
+    document.getElementById('step-1').classList.add('active');
+    document.getElementById('step-ind-1').classList.add('active');
+    document.getElementById('step-counter').textContent = 'Step 1 of 5';
+    document.getElementById('btn-back').style.visibility = 'hidden';
+    document.getElementById('btn-next').textContent = 'Next Step →';
+    document.getElementById('btn-next').className = 'btn btn-primary';
+  }
+
+  function showSection(section) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+  }
+
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
