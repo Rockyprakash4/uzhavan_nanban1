@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uzhavan Nanban — Smart Farm Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g50:#EAF3DE;--g100:#C0DD97;--g200:#97C459;--g400:#639922;--g600:#3B6D11;--g800:#27500A;--g900:#173404;
+  --a50:#FAEEDA;--a100:#FAC775;--a200:#EF9F27;--a400:#BA7517;--a600:#854F0B;
+  --t50:#E1F5EE;--t400:#1D9E75;--t600:#0F6E56;
+  --b50:#E6F1FB;--b400:#378ADD;--b600:#185FA5;
+  --r50:#FCEBEB;--r400:#E24B4A;
+  --sw:260px;--hh:64px;
+}
+body{font-family:'DM Sans',sans-serif;background:#f5f7f2;color:#1a2210;min-height:100vh;display:flex}
+
+/* SIDEBAR */
+aside{width:var(--sw);min-height:100vh;background:var(--g900);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;overflow-y:auto}
+.sb-brand{padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sb-logo{width:40px;height:40px;background:var(--g400);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px}
+.sb-brand h1{font-family:'Playfair Display',serif;font-size:17px;color:#fff;line-height:1.2}
+.sb-brand p{font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;letter-spacing:0.08em;text-transform:uppercase}
+.sb-nav{padding:12px 10px;flex:1}
+.nav-grp{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:0 8px;margin:14px 0 5px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,0.6);font-size:13.5px;font-weight:400;border:none;background:none;width:100%;text-align:left;margin-bottom:1px;transition:background 0.15s,color 0.15s;font-family:inherit}
+.nav-item:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.9)}
+.nav-item.active{background:var(--g600);color:#fff;font-weight:500}
+.nav-icon{font-size:17px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--a200);color:var(--a600);font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px}
+.sb-footer{padding:14px 10px;border-top:1px solid rgba(255,255,255,0.08)}
+.wx-box{background:rgba(255,255,255,0.06);border-radius:10px;padding:10px 12px}
+.wx-loc{font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:6px}
+.wx-row{display:flex;justify-content:space-between}
+.wx-item .wv{font-size:15px;font-weight:600;color:#fff;text-align:center}
+.wx-item .wl{font-size:10px;color:rgba(255,255,255,0.4);text-align:center;margin-top:1px}
+
+/* MAIN */
+main{margin-left:var(--sw);flex:1;min-height:100vh;display:flex;flex-direction:column}
+header{height:var(--hh);background:#fff;border-bottom:1px solid #e8ede0;display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:50}
+.hdr-greet{flex:1}
+.hdr-greet h2{font-size:15px;font-weight:600;color:#1a2210}
+.hdr-greet p{font-size:12px;color:#6b7c5a;margin-top:1px}
+.hdr-actions{display:flex;align-items:center;gap:10px}
+.lang-sw{display:flex;border:1px solid #d4dfc5;border-radius:8px;overflow:hidden}
+.lang-btn{padding:5px 11px;font-size:12px;font-weight:500;background:none;border:none;cursor:pointer;color:#6b7c5a;font-family:inherit;transition:background 0.12s}
+.lang-btn.active{background:var(--g400);color:#fff}
+.lang-btn:hover:not(.active){background:var(--g50)}
+.notif-btn{width:34px;height:34px;border-radius:8px;border:1px solid #d4dfc5;background:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;position:relative}
+.notif-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;background:var(--r400);border-radius:50%;border:2px solid #fff}
+
+/* PAGES */
+.page{display:none;padding:26px 30px;flex:1;flex-direction:column}
+.page.active{display:flex}
+
+/* ALERT */
+.alert-bar{background:#fff8ed;border:1px solid var(--a100);border-left:4px solid var(--a200);border-radius:8px;padding:9px 14px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--a600);margin-bottom:20px}
+.alert-bar .ax{margin-left:auto;background:none;border:none;font-size:17px;cursor:pointer;color:var(--a400);padding:0 2px;line-height:1}
+
+/* STAT CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat-card{background:#fff;border:1px solid #e8ede0;border-radius:12px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px}
+.stat-ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.ico-g{background:var(--g50);color:var(--g600)}
+.ico-a{background:var(--a50);color:var(--a400)}
+.ico-t{background:var(--t50);color:var(--t600)}
+.ico-b{background:var(--b50);color:var(--b600)}
+.stat-val{font-size:21px;font-weight:700;color:#1a2210}
+.stat-lbl{font-size:12px;color:#6b7c5a;margin-top:2px}
+.stat-sub{font-size:11px;color:#a3b88a;margin-top:2px}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;flex:1}
+
+/* PANEL */
+.panel{background:#fff;border:1px solid #e8ede0;border-radius:14px;overflow:hidden}
+.panel-hdr{padding:18px 22px;border-bottom:1px solid #e8ede0;display:flex;align-items:center;justify-content:space-between}
+.panel-hdr h3{font-size:15px;font-weight:600;color:#1a2210}
+.panel-hdr p{font-size:12px;color:#6b7c5a;margin-top:2px}
+
+/* STEP BAR */
+.step-bar{display:flex;align-items:flex-start;padding:18px 22px 0;gap:0}
+.step-item{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
+.step-item:not(:last-child)::after{content:'';position:absolute;top:15px;left:55%;width:90%;height:2px;background:#e8ede0;z-index:0}
+.step-item.done:not(:last-child)::after,.step-item.si-active:not(:last-child)::after{background:var(--g200)}
+.step-dot{width:30px;height:30px;border-radius:50%;background:#e8ede0;color:#a3b88a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;position:relative;z-index:1;transition:all 0.2s}
+.step-item.done .step-dot{background:var(--g400);color:#fff}
+.step-item.si-active .step-dot{background:var(--g600);color:#fff;box-shadow:0 0 0 4px var(--g50)}
+.step-lbl{font-size:10px;color:#a3b88a;margin-top:5px;text-align:center;white-space:nowrap}
+.step-item.si-active .step-lbl{color:var(--g600);font-weight:500}
+
+/* FORM */
+.form-body{padding:20px 22px}
+.form-step{display:none}
+.form-step.fs-active{display:block}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-group{margin-bottom:14px}
+.form-group:last-child{margin-bottom:0}
+.form-label{display:block;font-size:11px;font-weight:500;color:#4a5c35;margin-bottom:5px;letter-spacing:0.04em;text-transform:uppercase}
+.form-ctrl{width:100%;padding:9px 12px;background:#f9faf6;border:1px solid #d4dfc5;border-radius:8px;font-size:13.5px;color:#1a2210;font-family:inherit;outline:none;transition:border-color 0.15s,background 0.15s;appearance:none;-webkit-appearance:none}
+.form-ctrl:focus{border-color:var(--g400);background:#fff}
+.sl-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.sl-row label{font-size:12.5px;color:#4a5c35;width:155px;flex-shrink:0}
+.sl-row input[type=range]{flex:1;height:4px;accent-color:var(--g400);cursor:pointer}
+.sl-val{font-size:13px;font-weight:600;color:var(--g600);min-width:48px;text-align:right}
+.crop-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}
+.crop-btn{border:1.5px solid #d4dfc5;border-radius:10px;padding:11px 6px;text-align:center;cursor:pointer;background:#f9faf6;transition:border-color 0.15s,background 0.15s;font-family:inherit;width:100%}
+.crop-btn:hover{border-color:var(--g200);background:var(--g50)}
+.crop-btn.selected{border-color:var(--g400);background:var(--g50)}
+.crop-emoji{font-size:24px;display:block;margin-bottom:4px}
+.crop-name{font-size:11px;color:#4a5c35;font-weight:500}
+.soil-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:5px}
+.soil-btn{border:1.5px solid #d4dfc5;border-radius:8px;padding:8px 10px;cursor:pointer;background:#f9faf6;font-size:12px;color:#4a5c35;font-family:inherit;transition:border-color 0.15s,background 0.15s;display:flex;align-items:center;gap:6px;text-align:left}
+.soil-btn:hover{border-color:var(--g200);background:var(--g50)}
+.soil-btn.selected{border-color:var(--g400);background:var(--g50);font-weight:500}
+.rv-table{width:100%;font-size:13px;border-collapse:collapse}
+.rv-table td{padding:7px 0;border-bottom:1px solid #f0f4e8}
+.rv-table tr:last-child td{border-bottom:none}
+.rv-table td:first-child{color:#6b7c5a;width:46%}
+.rv-table td:last-child{font-weight:500;color:#1a2210;text-align:right}
+.form-actions{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-top:1px solid #e8ede0;background:#fbfcf9}
+
+/* BUTTONS */
+.btn{padding:9px 20px;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:background 0.15s,transform 0.1s}
+.btn:active{transform:scale(0.98)}
+.btn-primary{background:var(--g600);color:#fff}
+.btn-primary:hover{background:var(--g800)}
+.btn-secondary{background:#f0f4e8;color:#4a5c35;border:1px solid #d4dfc5}
+.btn-secondary:hover{background:#e4ebcf}
+.btn-predict{background:var(--g400);color:#fff;font-size:14px;padding:10px 26px}
+.btn-predict:hover{background:var(--g600)}
+.btn-outline{background:#fff;color:var(--g600);border:1.5px solid var(--g200)}
+.btn-outline:hover{background:var(--g50)}
+
+/* RESULT */
+#result-section{display:none}
+.result-hero{background:linear-gradient(135deg,var(--g800) 0%,var(--g600) 100%);border-radius:12px;padding:26px;color:#fff;margin-bottom:18px;display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center}
+.yield-big{text-align:center;padding-right:22px;border-right:1px solid rgba(255,255,255,0.15)}
+.yield-num{font-family:'Playfair Display',serif;font-size:48px;font-weight:700;line-height:1}
+.yield-unit{font-size:13px;color:rgba(255,255,255,0.65);margin-top:3px}
+.yield-badge{background:rgba(255,255,255,0.15);border-radius:20px;padding:4px 12px;font-size:11px;margin-top:7px;display:inline-block}
+.yield-details{padding-left:4px}
+.yield-details h3{font-size:11px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
+.yield-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ym-val{font-size:18px;font-weight:700}
+.ym-lbl{font-size:10px;color:rgba(255,255,255,0.5);margin-top:1px}
+.conf-bar{margin-top:12px}
+.conf-labels{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:5px}
+.conf-track{background:rgba(255,255,255,0.15);border-radius:4px;height:5px}
+.conf-fill{background:var(--a200);border-radius:4px;height:5px;transition:width 1s ease}
+.advice-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:16px}
+.adv-card{background:#fff;border:1px solid #e8ede0;border-radius:10px;padding:13px 15px}
+.adv-hdr{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.adv-icon{font-size:19px}
+.adv-title{font-size:13px;font-weight:600;color:#1a2210}
+.adv-body{font-size:12px;color:#6b7c5a;line-height:1.5}
+.result-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+
+/* RIGHT COL */
+.right-col{display:flex;flex-direction:column;gap:18px}
+.tip-card{background:#fff;border:1px solid #e8ede0;border-radius:14px;overflow:hidden}
+.tip-hdr{background:var(--g50);border-bottom:1px solid #d4dfc5;padding:13px 16px;display:flex;align-items:center;gap:8px}
+.tip-hdr h4{font-size:13px;font-weight:600;color:var(--g800)}
+.tip-date-badge{margin-left:auto;font-size:10px;color:var(--g400);background:var(--g100);padding:2px 8px;border-radius:20px}
+.tip-body{padding:14px 16px;font-size:13px;color:#3d5226;line-height:1.6}
+.hist-list{padding:0 6px 6px}
+.hist-item{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:8px;cursor:pointer;transition:background 0.12s;border-bottom:1px solid #f0f4e8}
+.hist-item:last-child{border-bottom:none}
+.hist-item:hover{background:var(--g50)}
+.hist-ico{font-size:22px;flex-shrink:0}
+.hi-title{font-size:13px;font-weight:500;color:#1a2210}
+.hi-sub{font-size:11px;color:#6b7c5a;margin-top:1px}
+.hist-yield{text-align:right}
+.hy-val{font-size:13px;font-weight:700;color:var(--g600)}
+.hy-unit{font-size:10px;color:#a3b88a}
+.new-pred-btn{width:100%;padding:10px;background:none;border:1.5px dashed #d4dfc5;border-radius:8px;font-size:13px;color:#6b7c5a;cursor:pointer;font-family:inherit;margin-top:4px;transition:border-color 0.15s,color 0.15s}
+.new-pred-btn:hover{border-color:var(--g400);color:var(--g600)}
+
+/* ADVICE PAGE */
+.adv-page-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}
+.adv-pg-card{background:#fff;border:1px solid #e8ede0;border-radius:12px;padding:20px}
+.adv-pg-icon{font-size:32px;margin-bottom:12px}
+.adv-pg-title{font-size:14px;font-weight:600;color:#1a2210;margin-bottom:8px}
+.adv-pg-body{font-size:13px;color:#6b7c5a;line-height:1.6}
+.adv-pg-tag{display:inline-block;margin-top:10px;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
+.tag-good{background:var(--g50);color:var(--g600)}
+.tag-warn{background:var(--a50);color:var(--a600)}
+.tag-alert{background:var(--r50);color:var(--r400)}
+
+/* PEST PAGE */
+.pest-alert-card{background:#fff;border:1px solid #e8ede0;border-left:4px solid var(--r400);border-radius:12px;padding:20px;margin-bottom:16px;display:flex;gap:16px}
+.pest-sev{font-size:28px;flex-shrink:0}
+.pest-title{font-size:15px;font-weight:600;color:#1a2210;margin-bottom:5px}
+.pest-desc{font-size:13px;color:#6b7c5a;line-height:1.5;margin-bottom:10px}
+.pest-actions{display:flex;gap:8px}
+
+/* INCOME PAGE */
+.income-calc{background:#fff;border:1px solid #e8ede0;border-radius:14px;padding:24px;margin-bottom:20px}
+.income-result{background:linear-gradient(135deg,var(--g800),var(--g600));border-radius:12px;padding:24px;color:#fff;text-align:center;margin-top:20px}
+.income-big{font-family:'Playfair Display',serif;font-size:42px;font-weight:700}
+.income-lbl{font-size:13px;color:rgba(255,255,255,0.65);margin-top:4px}
+.income-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+.ib-item{background:rgba(255,255,255,0.1);border-radius:8px;padding:12px;text-align:center}
+.ib-val{font-size:16px;font-weight:700}
+.ib-lbl{font-size:10px;color:rgba(255,255,255,0.55);margin-top:2px}
+
+/* HISTORY PAGE */
+.hist-page-table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e8ede0}
+.hist-page-table th{background:var(--g50);font-size:12px;font-weight:600;color:#4a5c35;padding:12px 16px;text-align:left;border-bottom:1px solid #d4dfc5}
+.hist-page-table td{padding:12px 16px;font-size:13px;color:#1a2210;border-bottom:1px solid #f0f4e8}
+.hist-page-table tr:last-child td{border-bottom:none}
+.hist-page-table tr:hover td{background:var(--g50)}
+.yield-cell{font-weight:700;color:var(--g600)}
+.season-badge{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500}
+.kharif{background:#e1f5ee;color:#0f6e56}
+.rabi{background:#e6f1fb;color:#185fa5}
+.zaid{background:#faeeda;color:#854f0b}
+
+/* MARKET PAGE */
+.market-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.mkt-card{background:#fff;border:1px solid #e8ede0;border-radius:12px;padding:16px}
+.mkt-crop{font-size:24px;margin-bottom:6px}
+.mkt-name{font-size:13px;font-weight:600;color:#1a2210}
+.mkt-price{font-size:18px;font-weight:700;color:var(--g600);margin-top:4px}
+.mkt-unit{font-size:11px;color:#a3b88a}
+.mkt-change{font-size:12px;margin-top:4px}
+.up{color:var(--t400)}
+.down{color:var(--r400)}
+
+/* SEASON PAGE */
+.season-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.season-card{background:#fff;border:1px solid #e8ede0;border-radius:12px;padding:20px}
+.season-icon{font-size:32px;margin-bottom:10px}
+.season-name{font-size:15px;font-weight:600;color:#1a2210;margin-bottom:6px}
+.season-period{font-size:12px;color:var(--g400);margin-bottom:10px}
+.season-body{font-size:13px;color:#6b7c5a;line-height:1.5}
+.season-crops{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
+.crop-tag{font-size:11px;padding:3px 9px;background:var(--g50);color:var(--g600);border-radius:20px;font-weight:500}
+
+/* PAGE TITLE */
+.page-title{margin-bottom:20px}
+.page-title h2{font-size:20px;font-weight:600;color:#1a2210}
+.page-title p{font-size:13px;color:#6b7c5a;margin-top:3px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:16px;padding:28px;max-width:420px;width:90%;position:relative}
+.modal-close{position:absolute;top:14px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#6b7c5a}
+.modal-icon{font-size:40px;margin-bottom:12px}
+.modal-title{font-size:17px;font-weight:600;color:#1a2210;margin-bottom:8px}
+.modal-body{font-size:13px;color:#6b7c5a;line-height:1.6;margin-bottom:18px}
+.modal-actions{display:flex;gap:10px}
+
+/* TOAST */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--g800);color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#d4dfc5;border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside>
+  <div class="sb-brand">
+    <div class="sb-logo">🌱</div>
+    <h1>Uzhavan Nanban</h1>
+    <p>Smart Farm Assistant</p>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-grp">Main</div>
+    <button class="nav-item active" onclick="goPage('predict',this)"><span class="nav-icon">🔍</span>Yield Prediction</button>
+    <button class="nav-item" onclick="goPage('advice',this)"><span class="nav-icon">💡</span>Smart Advice</button>
+    <button class="nav-item" onclick="goPage('pest',this)"><span class="nav-icon">🐛</span>Pest Check<span class="nav-badge">Alert</span></button>
+    <div class="nav-grp">Records</div>
+    <button class="nav-item" onclick="goPage('history',this)"><span class="nav-icon">📊</span>My History</button>
+    <button class="nav-item" onclick="goPage('market',this)"><span class="nav-icon">📈</span>Market Prices</button>
+    <button class="nav-item" onclick="goPage('season',this)"><span class="nav-icon">🔮</span>Season Forecast</button>
+    <div class="nav-grp">Tools</div>
+    <button class="nav-item" onclick="goPage('income',this)"><span class="nav-icon">💰</span>Income Calculator</button>
+    <button class="nav-item" onclick="goPage('predict',this)"><span class="nav-icon">🌾</span>My Crops</button>
+  </nav>
+  <div class="sb-footer">
+    <div class="wx-box">
+      <div class="wx-loc">📍 Thanjavur, Tamil Nadu</div>
+      <div class="wx-row">
+        <div class="wx-item"><div class="wv">32°C</div><div class="wl">Temp</div></div>
+        <div class="wx-item"><div class="wv">847mm</div><div class="wl">Rainfall</div></div>
+        <div class="wx-item"><div class="wv">68%</div><div class="wl">Humidity</div></div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main>
+  <header>
+    <div class="hdr-greet">
+      <h2 id="hdr-title">👋 Good Morning, Farmer!</h2>
+      <p id="hdr-sub">What will you grow today? Get AI-powered yield predictions in seconds.</p>
+    </div>
+    <div class="hdr-actions">
+      <div class="lang-sw">
+        <button class="lang-btn active" onclick="setLang(this,'EN')">EN</button>
+        <button class="lang-btn" onclick="setLang(this,'தமிழ்')">தமிழ்</button>
+        <button class="lang-btn" onclick="setLang(this,'हि')">हि</button>
+      </div>
+      <button class="notif-btn" onclick="openModal('pest-modal')" title="Pest Alert">🔔<span class="notif-dot"></span></button>
+    </div>
+  </header>
+
+  <!-- ===== PAGE: PREDICT ===== -->
+  <div class="page active" id="page-predict">
+    <div class="alert-bar" id="pest-alert">
+      ⚠️ <strong>Pest Risk Alert:</strong> High blast fungus risk for Paddy in your region this week.
+      <button class="ax" onclick="document.getElementById('pest-alert').style.display='none'">✕</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-ico ico-g">🌾</div><div><div class="stat-val">4,644</div><div class="stat-lbl">Avg Yield (kg/ha)</div><div class="stat-sub">Last prediction · Paddy</div></div></div>
+      <div class="stat-card"><div class="stat-ico ico-a">💰</div><div><div class="stat-val">₹1.85L</div><div class="stat-lbl">Estimated Income</div><div class="stat-sub">At MSP rates</div></div></div>
+      <div class="stat-card"><div class="stat-ico ico-t">🌿</div><div><div class="stat-val">72%</div><div class="stat-lbl">Crop Health Score</div><div class="stat-sub">Moderate – can improve</div></div></div>
+      <div class="stat-card"><div class="stat-ico ico-b">📊</div><div><div class="stat-val">12</div><div class="stat-lbl">Total Predictions</div><div class="stat-sub">This season</div></div></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <!-- WIZARD -->
+        <div class="panel" id="wizard-panel">
+          <div class="panel-hdr"><div><h3>🔍 Yield Prediction Wizard</h3><p>AI-powered harvest forecast for your farm</p></div></div>
+          <div class="step-bar">
+            <div class="step-item si-active" id="si1"><div class="step-dot">1</div><div class="step-lbl">Location</div></div>
+            <div class="step-item" id="si2"><div class="step-dot">2</div><div class="step-lbl">Crop</div></div>
+            <div class="step-item" id="si3"><div class="step-dot">3</div><div class="step-lbl">Weather</div></div>
+            <div class="step-item" id="si4"><div class="step-dot">4</div><div class="step-lbl">Soil</div></div>
+            <div class="step-item" id="si5"><div class="step-dot">5</div><div class="step-lbl">Review</div></div>
+          </div>
+          <div class="form-body">
+            <!-- Step 1 -->
+            <div class="form-step fs-active" id="fs1">
+              <div class="form-grid">
+                <div class="form-group"><label class="form-label">📍 District</label>
+                  <select class="form-ctrl" id="sel-district">
+                    <option>Thanjavur</option><option>Madurai</option><option>Coimbatore</option>
+                    <option>Trichy</option><option>Salem</option><option>Erode</option>
+                    <option>Tirunelveli</option><option>Vellore</option><option>Dindigul</option>
+                  </select>
+                </div>
+                <div class="form-group"><label class="form-label">📅 Season</label>
+                  <select class="form-ctrl" id="sel-season">
+                    <option value="Kharif">☀️ Kharif (June – October)</option>
+                    <option value="Rabi">❄️ Rabi (November – March)</option>
+                    <option value="Zaid">🌸 Zaid (April – May)</option>
+                  </select>
+                </div>
+                <div class="form-group"><label class="form-label">📐 Farm Area (ha)</label>
+                  <input class="form-ctrl" type="number" id="inp-area" value="2" min="0.1" step="0.1">
+                </div>
+                <div class="form-group"><label class="form-label">📅 Prediction Year</label>
+                  <select class="form-ctrl" id="sel-year">
+                    <option>2024</option><option selected>2025</option>
+                    <option>2026 (Future)</option><option>2027 (Future)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <!-- Step 2 -->
+            <div class="form-step" id="fs2">
+              <p style="font-size:13px;color:#6b7c5a;margin-bottom:12px">Select the crop to predict:</p>
+              <div class="crop-grid">
+                <button class="crop-btn selected" data-crop="Paddy" onclick="pickCrop(this)"><span class="crop-emoji">🌾</span><span class="crop-name">Paddy</span></button>
+                <button class="crop-btn" data-crop="Wheat" onclick="pickCrop(this)"><span class="crop-emoji">🌿</span><span class="crop-name">Wheat</span></button>
+                <button class="crop-btn" data-crop="Maize" onclick="pickCrop(this)"><span class="crop-emoji">🌽</span><span class="crop-name">Maize</span></button>
+                <button class="crop-btn" data-crop="Sugarcane" onclick="pickCrop(this)"><span class="crop-emoji">🎋</span><span class="crop-name">Sugarcane</span></button>
+                <button class="crop-btn" data-crop="Cotton" onclick="pickCrop(this)"><span class="crop-emoji">🤍</span><span class="crop-name">Cotton</span></button>
+                <button class="crop-btn" data-crop="Soybean" onclick="pickCrop(this)"><span class="crop-emoji">🟡</span><span class="crop-name">Soybean</span></button>
+                <button class="crop-btn" data-crop="Groundnut" onclick="pickCrop(this)"><span class="crop-emoji">🥜</span><span class="crop-name">Groundnut</span></button>
+                <button class="crop-btn" data-crop="Banana" onclick="pickCrop(this)"><span class="crop-emoji">🍌</span><span class="crop-name">Banana</span></button>
+              </div>
+            </div>
+            <!-- Step 3 -->
+            <div class="form-step" id="fs3">
+              <p style="font-size:13px;color:#6b7c5a;margin-bottom:16px">Adjust to match your current weather:</p>
+              <div class="sl-row"><label>💧 Rainfall (mm)</label><input type="range" min="0" max="2000" value="850" step="10" id="sl-rain" oninput="document.getElementById('vr').textContent=this.value+'mm'"><span class="sl-val" id="vr">850mm</span></div>
+              <div class="sl-row"><label>🌡️ Temperature (°C)</label><input type="range" min="10" max="45" value="28" step="1" id="sl-temp" oninput="document.getElementById('vt').textContent=this.value+'°C'"><span class="sl-val" id="vt">28°C</span></div>
+              <div class="sl-row"><label>💦 Humidity (%)</label><input type="range" min="20" max="100" value="65" step="1" id="sl-hum" oninput="document.getElementById('vh').textContent=this.value+'%'"><span class="sl-val" id="vh">65%</span></div>
+            </div>
+            <!-- Step 4 -->
+            <div class="form-step" id="fs4">
+              <p style="font-size:13px;color:#6b7c5a;margin-bottom:16px">Enter soil test results or use defaults:</p>
+              <div class="sl-row"><label>🌿 Nitrogen N (kg/ha)</label><input type="range" min="0" max="200" value="80" step="5" id="sl-n" oninput="document.getElementById('vn').textContent=this.value"><span class="sl-val" id="vn">80</span></div>
+              <div class="sl-row"><label>🔵 Phosphorus P (kg/ha)</label><input type="range" min="0" max="150" value="40" step="5" id="sl-p" oninput="document.getElementById('vp').textContent=this.value"><span class="sl-val" id="vp">40</span></div>
+              <div class="sl-row"><label>🟤 Potassium K (kg/ha)</label><input type="range" min="0" max="200" value="60" step="5" id="sl-k" oninput="document.getElementById('vk').textContent=this.value"><span class="sl-val" id="vk">60</span></div>
+              <label class="form-label" style="margin-top:4px">🌱 Soil Type</label>
+              <div class="soil-grid">
+                <button class="soil-btn selected" onclick="pickSoil(this)">🟫 Alluvial Soil</button>
+                <button class="soil-btn" onclick="pickSoil(this)">🔴 Red Soil</button>
+                <button class="soil-btn" onclick="pickSoil(this)">⚫ Black Cotton Soil</button>
+                <button class="soil-btn" onclick="pickSoil(this)">🟠 Laterite Soil</button>
+                <button class="soil-btn" onclick="pickSoil(this)">🟡 Sandy Soil</button>
+              </div>
+            </div>
+            <!-- Step 5 -->
+            <div class="form-step" id="fs5">
+              <p style="font-size:13px;color:#6b7c5a;margin-bottom:14px">Review your inputs then click Predict Yield:</p>
+              <table class="rv-table">
+                <tr><td>District</td><td id="rv-district">—</td></tr>
+                <tr><td>Season</td><td id="rv-season">—</td></tr>
+                <tr><td>Farm Area</td><td id="rv-area">—</td></tr>
+                <tr><td>Year</td><td id="rv-year">—</td></tr>
+                <tr><td>Crop</td><td id="rv-crop">—</td></tr>
+                <tr><td>Rainfall</td><td id="rv-rain">—</td></tr>
+                <tr><td>Temperature</td><td id="rv-temp">—</td></tr>
+                <tr><td>Humidity</td><td id="rv-hum">—</td></tr>
+                <tr><td>Nitrogen</td><td id="rv-n">—</td></tr>
+                <tr><td>Phosphorus</td><td id="rv-p">—</td></tr>
+                <tr><td>Potassium</td><td id="rv-k">—</td></tr>
+                <tr><td>Soil Type</td><td id="rv-soil">—</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-secondary" id="btn-back" onclick="stepNav(-1)" style="visibility:hidden">← Back</button>
+            <span style="font-size:12px;color:#a3b88a" id="step-ctr">Step 1 of 5</span>
+            <button class="btn btn-primary" id="btn-next" onclick="stepNav(1)">Next Step →</button>
+          </div>
+        </div>
+        <!-- RESULT -->
+        <div id="result-section">
+          <div class="result-hero">
+            <div class="yield-big">
+              <div class="yield-num" id="res-yield">4,644</div>
+              <div class="yield-unit">kg / hectare</div>
+              <div class="yield-badge" id="res-conf">87% Confidence</div>
+            </div>
+            <div class="yield-details">
+              <h3>Predicted Yield — <span id="res-crop-loc">Paddy · Thanjavur</span></h3>
+              <div class="yield-meta">
+                <div><div class="ym-val" id="res-total">9,288 kg</div><div class="ym-lbl">Total Harvest</div></div>
+                <div><div class="ym-val" id="res-income">₹1.85L</div><div class="ym-lbl">Est. Income</div></div>
+                <div><div class="ym-val" id="res-season">Kharif 2025</div><div class="ym-lbl">Season</div></div>
+                <div><div class="ym-val" id="res-area-disp">2 ha</div><div class="ym-lbl">Farm Area</div></div>
+              </div>
+              <div class="conf-bar">
+                <div class="conf-labels"><span>AI Confidence</span><span id="conf-pct">87%</span></div>
+                <div class="conf-track"><div class="conf-fill" id="conf-fill" style="width:87%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="advice-grid">
+            <div class="adv-card"><div class="adv-hdr"><span class="adv-icon">💧</span><span class="adv-title">Irrigation</span></div><div class="adv-body">Current rainfall is sufficient. Supplement 2–3 irrigations at tillering and panicle stages for optimal yield.</div></div>
+            <div class="adv-card"><div class="adv-hdr"><span class="adv-icon">🌿</span><span class="adv-title">Fertiliser</span></div><div class="adv-body">Apply nitrogen in split doses — 50% basal, 25% at tillering, 25% at panicle initiation.</div></div>
+            <div class="adv-card"><div class="adv-hdr"><span class="adv-icon">🐛</span><span class="adv-title">Pest Management</span></div><div class="adv-body">Monitor for blast and brown plant hopper. Apply neem-based pesticide after 5 PM this week.</div></div>
+            <div class="adv-card"><div class="adv-hdr"><span class="adv-icon">📈</span><span class="adv-title">Yield Optimizer</span></div><div class="adv-body">Increasing phosphorus to 60 kg/ha could boost yield by ~8%. Soil pH adjustment may also help.</div></div>
+          </div>
+          <div class="result-actions">
+            <button class="btn btn-primary" onclick="resetWizard()">🔍 New Prediction</button>
+            <button class="btn btn-secondary" onclick="goPage('income',null)">💰 Income Calculator</button>
+            <button class="btn btn-secondary" onclick="showToast('Result copied to clipboard!')">📤 Share Results</button>
+            <button class="btn btn-outline" onclick="showToast('Playing audio in Tamil...')">🔊 Hear in Tamil</button>
+          </div>
+        </div>
+      </div>
+      <!-- RIGHT COL -->
+      <div class="right-col">
+        <div class="tip-card">
+          <div class="tip-hdr"><span style="font-size:17px">💡</span><h4>Today's Farm Tip</h4><span class="tip-date-badge">June 7</span></div>
+          <div class="tip-body">Based on current humidity (68%), apply neem-based pesticide in the evening to prevent fungal growth. Best time: <strong>after 5 PM</strong>. Avoid spraying during peak heat hours.</div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div><h3>📊 Recent Predictions</h3><p>Your past harvest forecasts</p></div></div>
+          <div class="hist-list">
+            <div class="hist-item" onclick="showToast('Loading Paddy prediction...')"><div class="hist-ico">🌾</div><div class="hist-info"><div class="hi-title">Paddy · Thanjavur</div><div class="hi-sub">Kharif 2024 · 2 ha</div></div><div class="hist-yield"><div class="hy-val">4,644</div><div class="hy-unit">kg/ha</div></div></div>
+            <div class="hist-item" onclick="showToast('Loading Wheat prediction...')"><div class="hist-ico">🌿</div><div class="hist-info"><div class="hi-title">Wheat · Madurai</div><div class="hi-sub">Rabi 2024 · 3 ha</div></div><div class="hist-yield"><div class="hy-val">3,210</div><div class="hy-unit">kg/ha</div></div></div>
+            <div class="hist-item" onclick="showToast('Loading Maize prediction...')"><div class="hist-ico">🌽</div><div class="hist-info"><div class="hi-title">Maize · Coimbatore</div><div class="hi-sub">Kharif 2024 · 1.5 ha</div></div><div class="hist-yield"><div class="hy-val">5,800</div><div class="hy-unit">kg/ha</div></div></div>
+            <div class="hist-item" onclick="showToast('Loading Groundnut prediction...')"><div class="hist-ico">🥜</div><div class="hist-info"><div class="hi-title">Groundnut · Thanjavur</div><div class="hi-sub">Zaid 2024 · 1 ha</div></div><div class="hist-yield"><div class="hy-val">1,950</div><div class="hy-unit">kg/ha</div></div></div>
+          </div>
+          <div style="padding:0 16px 14px"><button class="new-pred-btn" onclick="resetWizard()">+ Start New Prediction</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PAGE: ADVICE ===== -->
+  <div class="page" id="page-advice">
+    <div class="page-title"><h2>💡 Smart Farm Advice</h2><p>Personalized recommendations based on your farm data and current conditions</p></div>
+    <div class="adv-page-grid">
+      <div class="adv-pg-card"><div class="adv-pg-icon">💧</div><div class="adv-pg-title">Irrigation Management</div><div class="adv-pg-body">With current rainfall at 847mm, supplemental irrigation is recommended at critical crop stages. Use drip irrigation to save 30–40% water compared to flood irrigation.<br><br>Best irrigation schedule: Early morning (6–8 AM) or evening (5–7 PM).</div><span class="adv-pg-tag tag-good">✓ On Track</span></div>
+      <div class="adv-pg-card"><div class="adv-pg-icon">🌿</div><div class="adv-pg-title">Fertiliser Application</div><div class="adv-pg-body">Your soil nitrogen is at 80 kg/ha — moderate levels. Apply split doses to maximise uptake efficiency. Phosphorus at 40 kg/ha is slightly below optimal for paddy.<br><br>Recommendation: Add 10–15 kg/ha more phosphorus before panicle stage.</div><span class="adv-pg-tag tag-warn">⚠ Action Needed</span></div>
+      <div class="adv-pg-card"><div class="adv-pg-icon">🌡️</div><div class="adv-pg-title">Weather Advisory</div><div class="adv-pg-body">Temperature at 32°C is within optimal range for paddy growth. High humidity (68%) increases fungal disease risk. Pre-harvest weather looks favourable.<br><br>Monitor for sudden temperature drops during grain filling stage.</div><span class="adv-pg-tag tag-good">✓ Favourable</span></div>
+      <div class="adv-pg-card"><div class="adv-pg-icon">🌱</div><div class="adv-pg-title">Soil Health</div><div class="adv-pg-body">Alluvial soil in Thanjavur is well-suited for paddy cultivation. Maintain soil pH between 5.5–6.5 for optimal nutrient availability. Add organic matter to improve water retention.<br><br>Recommended: Apply 5 tons/ha of farm yard manure before planting.</div><span class="adv-pg-tag tag-good">✓ Good Condition</span></div>
+      <div class="adv-pg-card"><div class="adv-pg-icon">🔬</div><div class="adv-pg-title">Seed Selection</div><div class="adv-pg-body">For Kharif 2025, recommend ADT-43 or CO-51 paddy varieties for your district. These varieties show 15–20% higher yield than traditional varieties under similar conditions.<br><br>Use certified seeds from Tamil Nadu Seed Corporation.</div><span class="adv-pg-tag tag-good">✓ Recommended</span></div>
+      <div class="adv-pg-card"><div class="adv-pg-icon">📦</div><div class="adv-pg-title">Post-Harvest Storage</div><div class="adv-pg-body">Ensure grain moisture below 14% before storage to prevent fungal growth. Use hermetic storage bags for 3–6 month storage without chemicals.<br><br>Nearest warehouse: Thanjavur APMC yard (12 km from your location).</div><span class="adv-pg-tag tag-warn">⚠ Plan Ahead</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-hdr"><div><h3>📅 Seasonal Calendar</h3><p>Key activities for your farm this month</p></div></div>
+      <div style="padding:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div style="background:var(--g50);border-radius:10px;padding:14px"><div style="font-size:11px;font-weight:600;color:var(--g400);text-transform:uppercase;margin-bottom:8px">Week 1</div><div style="font-size:13px;color:#3d5226">Land preparation and soil testing</div></div>
+        <div style="background:var(--g50);border-radius:10px;padding:14px"><div style="font-size:11px;font-weight:600;color:var(--g400);text-transform:uppercase;margin-bottom:8px">Week 2</div><div style="font-size:13px;color:#3d5226">Seed treatment and nursery preparation</div></div>
+        <div style="background:var(--a50);border-radius:10px;padding:14px"><div style="font-size:11px;font-weight:600;color:var(--a400);text-transform:uppercase;margin-bottom:8px">Week 3</div><div style="font-size:13px;color:#3d5226">Transplanting and basal fertiliser</div></div>
+        <div style="background:var(--a50);border-radius:10px;padding:14px"><div style="font-size:11px;font-weight:600;color:var(--a400);text-transform:uppercase;margin-bottom:8px">Week 4</div><div style="font-size:13px;color:#3d5226">First weeding and pest monitoring</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PAGE: PEST ===== -->
+  <div class="page" id="page-pest">
+    <div class="page-title"><h2>🐛 Pest Check</h2><p>AI-powered pest detection and management recommendations</p></div>
+    <div class="pest-alert-card">
+      <div class="pest-sev">🚨</div>
+      <div>
+        <div class="pest-title">High Risk: Blast Fungus (Magnaporthe oryzae)</div>
+        <div class="pest-desc">Favourable weather conditions (high humidity 68% + temperature 28°C) are creating ideal conditions for blast disease in paddy. Risk is highest in low-lying areas. Early action can prevent 30–50% yield loss.</div>
+        <div class="pest-actions">
+          <button class="btn btn-primary" onclick="showToast('Spray schedule saved!')">📋 Create Spray Schedule</button>
+          <button class="btn btn-secondary" onclick="openModal('pest-detail-modal')">ℹ️ Learn More</button>
+        </div>
+      </div>
+    </div>
+    <div class="pest-alert-card" style="border-left-color:var(--a200)">
+      <div class="pest-sev">⚠️</div>
+      <div>
+        <div class="pest-title">Moderate Risk: Brown Plant Hopper (BPH)</div>
+        <div class="pest-desc">BPH populations are building up in neighboring districts. Monitor your field edges carefully. Use yellow sticky traps to track population levels. Avoid over-application of nitrogen which encourages BPH.</div>
+        <div class="pest-actions">
+          <button class="btn btn-secondary" onclick="showToast('Monitoring reminder set!')">🔔 Set Monitoring Reminder</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-hdr"><div><h3>🌿 Organic Control Methods</h3><p>Safe and effective bio-pesticides</p></div></div>
+      <div style="padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+        <div style="background:#f9faf6;border:1px solid #e8ede0;border-radius:10px;padding:14px"><div style="font-size:22px;margin-bottom:8px">🌿</div><div style="font-size:13px;font-weight:600;margin-bottom:5px">Neem Oil Spray</div><div style="font-size:12px;color:#6b7c5a">Dilute 5ml neem oil per litre of water. Spray in the evening. Effective against BPH and leaf folder.</div></div>
+        <div style="background:#f9faf6;border:1px solid #e8ede0;border-radius:10px;padding:14px"><div style="font-size:22px;margin-bottom:8px">🍃</div><div style="font-size:13px;font-weight:600;margin-bottom:5px">Trichoderma</div><div style="font-size:12px;color:#6b7c5a">Apply 2.5 kg/ha of Trichoderma viride to soil for blast disease prevention and soil health improvement.</div></div>
+        <div style="background:#f9faf6;border:1px solid #e8ede0;border-radius:10px;padding:14px"><div style="font-size:22px;margin-bottom:8px">🏺</div><div style="font-size:13px;font-weight:600;margin-bottom:5px">Panchagavya</div><div style="font-size:12px;color:#6b7c5a">Mix 3% panchagavya solution as foliar spray. Boosts plant immunity and reduces pest incidence naturally.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PAGE: HISTORY ===== -->
+  <div class="page" id="page-history">
+    <div class="page-title"><h2>📊 My Prediction History</h2><p>All your past yield predictions and actual harvest data</p></div>
+    <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="resetWizard();goPage('predict',null)">+ New Prediction</button>
+      <button class="btn btn-secondary" onclick="showToast('Exporting data...')">📤 Export CSV</button>
+      <button class="btn btn-secondary" onclick="showToast('Generating report...')">📄 PDF Report</button>
+    </div>
+    <table class="hist-page-table">
+      <thead><tr><th>Crop</th><th>District</th><th>Season</th><th>Area (ha)</th><th>Predicted Yield</th><th>Est. Income</th><th>Date</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>🌾 Paddy</td><td>Thanjavur</td><td><span class="season-badge kharif">Kharif 2024</span></td><td>2.0</td><td class="yield-cell">4,644 kg/ha</td><td class="yield-cell">₹2.03L</td><td>12 Jun 2024</td><td><button class="btn btn-secondary" style="font-size:11px;padding:5px 12px" onclick="showToast('Opening prediction...')">View</button></td></tr>
+        <tr><td>🌿 Wheat</td><td>Madurai</td><td><span class="season-badge rabi">Rabi 2024</span></td><td>3.0</td><td class="yield-cell">3,210 kg/ha</td><td class="yield-cell">₹2.04L</td><td>05 Nov 2023</td><td><button class="btn btn-secondary" style="font-size:11px;padding:5px 12px" onclick="showToast('Opening prediction...')">View</button></td></tr>
+        <tr><td>🌽 Maize</td><td>Coimbatore</td><td><span class="season-badge kharif">Kharif 2024</span></td><td>1.5</td><td class="yield-cell">5,800 kg/ha</td><td class="yield-cell">₹1.63L</td><td>18 Jun 2024</td><td><button class="btn btn-secondary" style="font-size:11px;padding:5px 12px" onclick="showToast('Opening prediction...')">View</button></td></tr>
+        <tr><td>🥜 Groundnut</td><td>Thanjavur</td><td><span class="season-badge zaid">Zaid 2024</span></td><td>1.0</td><td class="yield-cell">1,950 kg/ha</td><td class="yield-cell">₹1.19L</td><td>10 Apr 2024</td><td><button class="btn btn-secondary" style="font-size:11px;padding:5px 12px" onclick="showToast('Opening prediction...')">View</button></td></tr>
+        <tr><td>🍌 Banana</td><td>Trichy</td><td><span class="season-badge kharif">Kharif 2023</span></td><td>0.5</td><td class="yield-cell">28,400 kg/ha</td><td class="yield-cell">₹2.13L</td><td>22 Jul 2023</td><td><button class="btn btn-secondary" style="font-size:11px;padding:5px 12px" onclick="showToast('Opening prediction...')">View</button></td></tr>
+        <tr><td>🎋 Sugarcane</td><td>Erode</td><td><span class="season-badge rabi">Rabi 2023</span></td><td>2.5</td><td class="yield-cell">71,200 kg/ha</td><td class="yield-cell">₹5.62L</td><td>14 Dec 2022</td><td><button class="btn btn-secondary" style="font-size:11px;padding:5px 12px" onclick="showToast('Opening prediction...')">View</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== PAGE: INCOME ===== -->
+  <div class="page" id="page-income">
+    <div class="page-title"><h2>💰 Income Calculator</h2><p>Calculate your estimated farm income based on yield and market prices</p></div>
+    <div class="income-calc">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">🌾 Crop</label>
+          <select class="form-ctrl" id="ic-crop" onchange="calcIncome()">
+            <option value="Paddy">Paddy</option><option value="Wheat">Wheat</option><option value="Maize">Maize</option>
+            <option value="Sugarcane">Sugarcane</option><option value="Cotton">Cotton</option>
+            <option value="Soybean">Soybean</option><option value="Groundnut">Groundnut</option><option value="Banana">Banana</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">📐 Farm Area (ha)</label>
+          <input class="form-ctrl" type="number" id="ic-area" value="2" min="0.1" step="0.1" oninput="calcIncome()">
+        </div>
+        <div class="form-group"><label class="form-label">📦 Yield (kg/ha)</label>
+          <input class="form-ctrl" type="number" id="ic-yield" value="4644" oninput="calcIncome()">
+        </div>
+        <div class="form-group"><label class="form-label">💹 Price (₹/quintal)</label>
+          <input class="form-ctrl" type="number" id="ic-price" value="2183" oninput="calcIncome()">
+        </div>
+        <div class="form-group"><label class="form-label">🌱 Seed Cost (₹)</label>
+          <input class="form-ctrl" type="number" id="ic-seed" value="3000" oninput="calcIncome()">
+        </div>
+        <div class="form-group"><label class="form-label">💧 Input Cost (₹)</label>
+          <input class="form-ctrl" type="number" id="ic-input" value="15000" oninput="calcIncome()">
+        </div>
+      </div>
+      <div class="income-result">
+        <div style="font-size:12px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Estimated Net Income</div>
+        <div class="income-big" id="ic-net">₹1,68,422</div>
+        <div class="income-lbl">After deducting input costs</div>
+        <div class="income-breakdown">
+          <div class="ib-item"><div class="ib-val" id="ic-gross">₹2,03,422</div><div class="ib-lbl">Gross Revenue</div></div>
+          <div class="ib-item"><div class="ib-val" id="ic-cost">₹18,000</div><div class="ib-lbl">Total Costs</div></div>
+          <div class="ib-item"><div class="ib-val" id="ic-margin">82.8%</div><div class="ib-lbl">Profit Margin</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PAGE: MARKET ===== -->
+  <div class="page" id="page-market">
+    <div class="page-title"><h2>📈 Market Prices</h2><p>Today's MSP and market rates for major crops in Tamil Nadu</p></div>
+    <div class="market-grid">
+      <div class="mkt-card"><div class="mkt-crop">🌾</div><div class="mkt-name">Paddy</div><div class="mkt-price">₹2,183</div><div class="mkt-unit">per quintal (MSP)</div><div class="mkt-change up">▲ ₹143 from last year</div></div>
+      <div class="mkt-card"><div class="mkt-crop">🌿</div><div class="mkt-name">Wheat</div><div class="mkt-price">₹2,125</div><div class="mkt-unit">per quintal (MSP)</div><div class="mkt-change up">▲ ₹150 from last year</div></div>
+      <div class="mkt-card"><div class="mkt-crop">🌽</div><div class="mkt-name">Maize</div><div class="mkt-price">₹1,877</div><div class="mkt-unit">per quintal (MSP)</div><div class="mkt-change up">▲ ₹128 from last year</div></div>
+      <div class="mkt-card"><div class="mkt-crop">🥜</div><div class="mkt-name">Groundnut</div><div class="mkt-price">₹6,377</div><div class="mkt-unit">per quintal (MSP)</div><div class="mkt-change up">▲ ₹427 from last year</div></div>
+      <div class="mkt-card"><div class="mkt-crop">🤍</div><div class="mkt-name">Cotton</div><div class="mkt-price">₹6,620</div><div class="mkt-unit">per quintal (MSP)</div><div class="mkt-change down">▼ ₹80 from last year</div></div>
+      <div class="mkt-card"><div class="mkt-crop">🟡</div><div class="mkt-name">Soybean</div><div class="mkt-price">₹4,300</div><div class="mkt-unit">per quintal (MSP)</div><div class="mkt-change up">▲ ₹200 from last year</div></div>
+      <div class="mkt-card"><div class="mkt-crop">🎋</div><div class="mkt-name">Sugarcane</div><div class="mkt-price">₹315</div><div class="mkt-unit">per quintal (FRP)</div><div class="mkt-change up">▲ ₹15 from last year</div></div>
+      <div class="mkt-card"><div class="mkt-crop">🍌</div><div class="mkt-name">Banana</div><div class="mkt-price">₹1,500</div><div class="mkt-unit">per quintal (market)</div><div class="mkt-change down">▼ ₹200 from last month</div></div>
+    </div>
+    <div class="panel"><div class="panel-hdr"><div><h3>📍 Nearby Mandis</h3><p>Market yards near Thanjavur</p></div></div>
+      <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        <div style="background:#f9faf6;border:1px solid #e8ede0;border-radius:10px;padding:14px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">Thanjavur APMC</div><div style="font-size:12px;color:#6b7c5a">2 km away · Open 6AM–6PM</div><button class="btn btn-secondary" style="margin-top:10px;font-size:11px;padding:5px 12px" onclick="showToast('Opening directions...')">📍 Directions</button></div>
+        <div style="background:#f9faf6;border:1px solid #e8ede0;border-radius:10px;padding:14px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">Kumbakonam Market</div><div style="font-size:12px;color:#6b7c5a">40 km away · Open 7AM–5PM</div><button class="btn btn-secondary" style="margin-top:10px;font-size:11px;padding:5px 12px" onclick="showToast('Opening directions...')">📍 Directions</button></div>
+        <div style="background:#f9faf6;border:1px solid #e8ede0;border-radius:10px;padding:14px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">Trichy Yard</div><div style="font-size:12px;color:#6b7c5a">55 km away · Open 6AM–4PM</div><button class="btn btn-secondary" style="margin-top:10px;font-size:11px;padding:5px 12px" onclick="showToast('Opening directions...')">📍 Directions</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PAGE: SEASON ===== -->
+  <div class="page" id="page-season">
+    <div class="page-title"><h2>🔮 Season Forecast</h2><p>AI-powered seasonal predictions and crop recommendations for Tamil Nadu</p></div>
+    <div class="season-grid" style="margin-bottom:20px">
+      <div class="season-card"><div class="season-icon">☀️</div><div class="season-name">Kharif 2025</div><div class="season-period">June – October 2025</div><div class="season-body">Above-normal rainfall expected (105–110% of LPA). Good conditions for paddy, maize and groundnut. Plan for adequate drainage to prevent waterlogging in low-lying areas.</div><div class="season-crops"><span class="crop-tag">🌾 Paddy</span><span class="crop-tag">🌽 Maize</span><span class="crop-tag">🥜 Groundnut</span></div></div>
+      <div class="season-card"><div class="season-icon">❄️</div><div class="season-name">Rabi 2025–26</div><div class="season-period">November 2025 – March 2026</div><div class="season-body">Normal to slightly below-normal rainfall. Good for wheat and pulses in upland areas. Supplemental irrigation will be needed for most crops. Temperature expected to be 1–2°C above normal.</div><div class="season-crops"><span class="crop-tag">🌿 Wheat</span><span class="crop-tag">🫘 Pulses</span><span class="crop-tag">🧅 Onion</span></div></div>
+      <div class="season-card"><div class="season-icon">🌸</div><div class="season-name">Zaid 2026</div><div class="season-period">April – May 2026</div><div class="season-body">Short but critical summer season. Water conservation is key. Watermelon, cucumber and short-duration vegetables perform well. Avoid water-intensive crops due to potential shortage.</div><div class="season-crops"><span class="crop-tag">🍉 Watermelon</span><span class="crop-tag">🥒 Cucumber</span><span class="crop-tag">🌽 Short Maize</span></div></div>
+    </div>
+    <div class="panel"><div class="panel-hdr"><div><h3>🌧️ Rainfall Forecast — Thanjavur District</h3><p>Monthly rainfall prediction for 2025</p></div></div>
+      <div style="padding:20px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+        <div style="text-align:center"><div style="font-size:11px;color:#6b7c5a;margin-bottom:8px">Jun</div><div style="background:var(--b50);border-radius:8px;height:80px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px"><div style="background:var(--b400);border-radius:4px;width:28px;height:60px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:600">152</div></div></div>
+        <div style="text-align:center"><div style="font-size:11px;color:#6b7c5a;margin-bottom:8px">Jul</div><div style="background:var(--b50);border-radius:8px;height:80px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px"><div style="background:var(--b400);border-radius:4px;width:28px;height:72px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:600">184</div></div></div>
+        <div style="text-align:center"><div style="font-size:11px;color:#6b7c5a;margin-bottom:8px">Aug</div><div style="background:var(--b50);border-radius:8px;height:80px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px"><div style="background:var(--b400);border-radius:4px;width:28px;height:55px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:600">140</div></div></div>
+        <div style="text-align:center"><div style="font-size:11px;color:#6b7c5a;margin-bottom:8px">Sep</div><div style="background:var(--b50);border-radius:8px;height:80px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px"><div style="background:var(--b400);border-radius:4px;width:28px;height:65px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:600">164</div></div></div>
+        <div style="text-align:center"><div style="font-size:11px;color:#6b7c5a;margin-bottom:8px">Oct</div><div style="background:var(--b50);border-radius:8px;height:80px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px"><div style="background:var(--g400);border-radius:4px;width:28px;height:76px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:600">194</div></div></div>
+        <div style="text-align:center"><div style="font-size:11px;color:#6b7c5a;margin-bottom:8px">Nov</div><div style="background:var(--b50);border-radius:8px;height:80px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px"><div style="background:var(--b600);border-radius:4px;width:28px;height:50px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:600">128</div></div></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="pest-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('pest-modal')">✕</button>
+    <div class="modal-icon">🚨</div>
+    <div class="modal-title">Pest Risk Alert — Action Required</div>
+    <div class="modal-body">High blast fungus risk detected in Thanjavur district. Current weather conditions (humidity 68%, temperature 28°C) are creating ideal conditions for Magnaporthe oryzae.<br><br><strong>Recommended Action:</strong> Apply Tricyclazole 75% WP at 0.6 g/litre or Isoprothiolane 40% EC at 1.5 ml/litre. Spray in the evening between 5–7 PM for best results. Repeat after 10 days if conditions persist.</div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeModal('pest-modal');showToast('Spray schedule created!')">📋 Save Spray Schedule</button>
+      <button class="btn btn-secondary" onclick="closeModal('pest-modal')">Close</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="pest-detail-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('pest-detail-modal')">✕</button>
+    <div class="modal-icon">🌿</div>
+    <div class="modal-title">Brown Plant Hopper — Management Guide</div>
+    <div class="modal-body">BPH (Nilaparvata lugens) sucks plant sap and causes "hopperburn" — circular patches of dead plants. Avoid excess nitrogen. Use light traps to monitor populations.<br><br><strong>Chemical Control:</strong> Buprofezin 25 SC at 1.0 ml/litre or Thiamethoxam 25 WG at 0.2 g/litre when population exceeds 10 per hill.</div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeModal('pest-detail-modal');showToast('Reminder set!')">🔔 Set Reminder</button>
+      <button class="btn btn-secondary" onclick="closeModal('pest-detail-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ---- STATE ----
+let curStep = 1;
+const STEPS = 5;
+let selCrop = 'Paddy';
+let selSoil = 'Alluvial Soil';
+
+// ---- PAGE NAVIGATION ----
+function goPage(id, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+  // Update header
+  const t = translations[currentLang] || translations['EN'];
+  const titles = {
+    predict: t['hdr-predict'],
+    advice: t['hdr-advice'],
+    pest: t['hdr-pest'],
+    history: t['hdr-history'],
+    income: t['hdr-income'],
+    market: t['hdr-market'],
+    season: t['hdr-season'],
+  };
+  if (titles[id]) {
+    document.getElementById('hdr-title').textContent = titles[id][0];
+    document.getElementById('hdr-sub').textContent = titles[id][1];
+  }
+}
+
+// ---- STEP WIZARD ----
+function stepNav(dir) {
+  if (curStep === STEPS && dir === 1) { runPrediction(); return; }
+  const next = curStep + dir;
+  if (next < 1 || next > STEPS) return;
+  // Hide current
+  document.getElementById('fs' + curStep).classList.remove('fs-active');
+  const si = document.getElementById('si' + curStep);
+  si.classList.remove('si-active');
+  if (dir === 1) si.classList.add('done');
+  else si.classList.remove('done');
+  curStep = next;
+  document.getElementById('fs' + curStep).classList.add('fs-active');
+  document.getElementById('si' + curStep).classList.add('si-active');
+  document.getElementById('step-ctr').textContent = 'Step ' + curStep + ' of ' + STEPS;
+  document.getElementById('btn-back').style.visibility = curStep > 1 ? 'visible' : 'hidden';
+  const nb = document.getElementById('btn-next');
+  const t2 = translations[currentLang] || translations['EN'];
+  if (curStep === STEPS) {
+    nb.textContent = currentLang === 'TA' ? '✅ விளைச்சல் கணிக்கவும்' : currentLang === 'HI' ? '✅ उपज भविष्यवाणी करें' : '✅ Predict Yield';
+    nb.className = 'btn btn-predict';
+    fillReview();
+  } else {
+    nb.textContent = t2['btn-next'] || 'Next Step →';
+    nb.className = 'btn btn-primary';
+  }
+  const bb2 = document.getElementById('btn-back');
+  if (bb2) bb2.textContent = t2['btn-back'] || '← Back';
+}
+
+function pickCrop(el) {
+  document.querySelectorAll('.crop-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selCrop = el.dataset.crop;
+}
+
+function pickSoil(el) {
+  document.querySelectorAll('.soil-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selSoil = el.textContent.trim();
+}
+
+function fillReview() {
+  const season = document.getElementById('sel-season').options[document.getElementById('sel-season').selectedIndex].value;
+  document.getElementById('rv-district').textContent = document.getElementById('sel-district').value;
+  document.getElementById('rv-season').textContent = season;
+  document.getElementById('rv-area').textContent = document.getElementById('inp-area').value + ' ha';
+  document.getElementById('rv-year').textContent = document.getElementById('sel-year').value.replace(' (Future)', '');
+  document.getElementById('rv-crop').textContent = selCrop;
+  document.getElementById('rv-rain').textContent = document.getElementById('sl-rain').value + ' mm';
+  document.getElementById('rv-temp').textContent = document.getElementById('sl-temp').value + '°C';
+  document.getElementById('rv-hum').textContent = document.getElementById('sl-hum').value + '%';
+  document.getElementById('rv-n').textContent = document.getElementById('sl-n').value + ' kg/ha';
+  document.getElementById('rv-p').textContent = document.getElementById('sl-p').value + ' kg/ha';
+  document.getElementById('rv-k').textContent = document.getElementById('sl-k').value + ' kg/ha';
+  document.getElementById('rv-soil').textContent = selSoil;
+}
+
+function runPrediction() {
+  const rain = parseInt(document.getElementById('sl-rain').value);
+  const temp = parseInt(document.getElementById('sl-temp').value);
+  const n = parseInt(document.getElementById('sl-n').value);
+  const p = parseInt(document.getElementById('sl-p').value);
+  const k = parseInt(document.getElementById('sl-k').value);
+  const area = parseFloat(document.getElementById('inp-area').value) || 2;
+  const district = document.getElementById('sel-district').value;
+  const season = document.getElementById('sel-season').options[document.getElementById('sel-season').selectedIndex].value;
+  const year = document.getElementById('sel-year').value.replace(' (Future)', '');
+  const baseYield = {Paddy:4200,Wheat:3000,Maize:5200,Sugarcane:72000,Cotton:1800,Soybean:2100,Groundnut:1800,Banana:28000};
+  const msp = {Paddy:21.83,Wheat:21.25,Maize:18.77,Sugarcane:3.15,Cotton:66.20,Soybean:43.00,Groundnut:60.77,Banana:15.00};
+  const base = baseYield[selCrop] || 3500;
+  const rf = rain > 600 && rain < 1400 ? 1.08 : rain < 300 ? 0.88 : 0.95;
+  const tf = temp > 20 && temp < 35 ? 1.05 : 0.92;
+  const nf = 1 + ((n-60)*0.002 + (p-30)*0.001 + (k-40)*0.0005);
+  const yph = Math.round(base * rf * tf * nf);
+  const total = Math.round(yph * area);
+  const income = Math.round(total * (msp[selCrop] || 20));
+  const conf = Math.round(75 + Math.random() * 15);
+  const fmt = n => n >= 100000 ? '₹' + (n/100000).toFixed(2) + 'L' : '₹' + (n/1000).toFixed(1) + 'K';
+  document.getElementById('res-yield').textContent = yph.toLocaleString('en-IN');
+  document.getElementById('res-total').textContent = total.toLocaleString('en-IN') + ' kg';
+  document.getElementById('res-income').textContent = fmt(income);
+  document.getElementById('res-crop-loc').textContent = selCrop + ' · ' + district;
+  document.getElementById('res-season').textContent = season + ' ' + year;
+  document.getElementById('res-area-disp').textContent = area + ' ha';
+  document.getElementById('res-conf').textContent = conf + '% Confidence';
+  document.getElementById('conf-pct').textContent = conf + '%';
+  document.getElementById('conf-fill').style.width = conf + '%';
+  // Pre-fill income calc
+  document.getElementById('ic-crop').value = selCrop;
+  document.getElementById('ic-area').value = area;
+  document.getElementById('ic-yield').value = yph;
+  document.getElementById('ic-price').value = Math.round((msp[selCrop] || 20) * 100);
+  calcIncome();
+  document.getElementById('wizard-panel').style.display = 'none';
+  document.getElementById('result-section').style.display = 'block';
+  showToast('✅ Prediction complete!');
+}
+
+function resetWizard() {
+  document.getElementById('wizard-panel').style.display = 'block';
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('fs' + curStep).classList.remove('fs-active');
+  document.getElementById('si' + curStep).classList.remove('si-active', 'done');
+  curStep = 1;
+  for (let i = 1; i <= STEPS; i++) {
+    const si = document.getElementById('si' + i);
+    si.classList.remove('si-active', 'done');
+  }
+  document.getElementById('fs1').classList.add('fs-active');
+  document.getElementById('si1').classList.add('si-active');
+  document.getElementById('step-ctr').textContent = 'Step 1 of 5';
+  document.getElementById('btn-back').style.visibility = 'hidden';
+  document.getElementById('btn-next').textContent = 'Next Step →';
+  document.getElementById('btn-next').className = 'btn btn-primary';
+}
+
+// ---- INCOME CALC ----
+const mspData = {Paddy:2183,Wheat:2125,Maize:1877,Sugarcane:315,Cotton:6620,Soybean:4300,Groundnut:6377,Banana:1500};
+function calcIncome() {
+  const crop = document.getElementById('ic-crop').value;
+  const area = parseFloat(document.getElementById('ic-area').value) || 2;
+  const yph = parseFloat(document.getElementById('ic-yield').value) || 0;
+  const price = parseFloat(document.getElementById('ic-price').value) || mspData[crop] || 2000;
+  const seed = parseFloat(document.getElementById('ic-seed').value) || 0;
+  const input = parseFloat(document.getElementById('ic-input').value) || 0;
+  if (!document.getElementById('ic-price').dataset.manual) {
+    document.getElementById('ic-price').value = mspData[crop] || 2000;
+  }
+  const totalKg = yph * area;
+  const gross = Math.round((totalKg / 100) * price);
+  const cost = Math.round(seed + input);
+  const net = gross - cost;
+  const margin = gross > 0 ? ((net / gross) * 100).toFixed(1) : 0;
+  const fmt = n => n >= 100000 ? '₹' + (n/100000).toFixed(2) + 'L' : '₹' + n.toLocaleString('en-IN');
+  document.getElementById('ic-gross').textContent = fmt(gross);
+  document.getElementById('ic-cost').textContent = fmt(cost);
+  document.getElementById('ic-net').textContent = fmt(Math.max(0, net));
+  document.getElementById('ic-margin').textContent = Math.max(0, margin) + '%';
+}
+document.getElementById('ic-crop').addEventListener('change', function() {
+  document.getElementById('ic-price').value = mspData[this.value] || 2000;
+  document.getElementById('ic-price').dataset.manual = '';
+  calcIncome();
+});
+document.getElementById('ic-price').addEventListener('input', function() {
+  this.dataset.manual = '1';
+  calcIncome();
+});
+calcIncome();
+
+// ---- LANG ----
+const translations = {
+  EN: {
+    // Sidebar
+    'sb-title': 'Uzhavan Nanban',
+    'sb-sub': 'Smart Farm Assistant',
+    'nav-main': 'Main',
+    'nav-predict': 'Yield Prediction',
+    'nav-advice': 'Smart Advice',
+    'nav-pest': 'Pest Check',
+    'nav-records': 'Records',
+    'nav-history': 'My History',
+    'nav-market': 'Market Prices',
+    'nav-season': 'Season Forecast',
+    'nav-tools': 'Tools',
+    'nav-income': 'Income Calculator',
+    'nav-mycrops': 'My Crops',
+    // Header
+    'hdr-title': '👋 Good Morning, Farmer!',
+    'hdr-sub': 'What will you grow today? Get AI-powered yield predictions in seconds.',
+    // Alert
+    'pest-alert-txt': '⚠️ <strong>Pest Risk Alert:</strong> High blast fungus risk for Paddy in your region this week.',
+    // Stats
+    'stat-yield-lbl': 'Avg Yield (kg/ha)',
+    'stat-yield-sub': 'Last prediction · Paddy',
+    'stat-income-lbl': 'Estimated Income',
+    'stat-income-sub': 'At MSP rates',
+    'stat-health-lbl': 'Crop Health Score',
+    'stat-health-sub': 'Moderate – can improve',
+    'stat-preds-lbl': 'Total Predictions',
+    'stat-preds-sub': 'This season',
+    // Wizard
+    'wiz-title': '🔍 Yield Prediction Wizard',
+    'wiz-sub': 'AI-powered harvest forecast for your farm',
+    'step1-lbl': 'Location',
+    'step2-lbl': 'Crop',
+    'step3-lbl': 'Weather',
+    'step4-lbl': 'Soil',
+    'step5-lbl': 'Review',
+    'lbl-district': '📍 District',
+    'lbl-season': '📅 Season',
+    'lbl-area': '📐 Farm Area (ha)',
+    'lbl-year': '📅 Prediction Year',
+    'step2-hint': 'Select the crop to predict:',
+    'step3-hint': 'Adjust to match your current weather:',
+    'lbl-rainfall': '💧 Rainfall (mm)',
+    'lbl-temp': '🌡️ Temperature (°C)',
+    'lbl-humidity': '💦 Humidity (%)',
+    'step4-hint': 'Enter soil test results or use defaults:',
+    'lbl-nitrogen': '🌿 Nitrogen N (kg/ha)',
+    'lbl-phosphorus': '🔵 Phosphorus P (kg/ha)',
+    'lbl-potassium': '🟤 Potassium K (kg/ha)',
+    'lbl-soiltype': '🌱 Soil Type',
+    'step5-hint': 'Review your inputs then click Predict Yield:',
+    'rv-district': 'District',
+    'rv-season': 'Season',
+    'rv-area': 'Farm Area',
+    'rv-year': 'Year',
+    'rv-crop': 'Crop',
+    'rv-rain': 'Rainfall',
+    'rv-temp': 'Temperature',
+    'rv-hum': 'Humidity',
+    'rv-n': 'Nitrogen',
+    'rv-p': 'Phosphorus',
+    'rv-k': 'Potassium',
+    'rv-soil': 'Soil Type',
+    'btn-back': '← Back',
+    'btn-next': 'Next Step →',
+    // Tip panel
+    'tip-title': '💡 Today\'s Agri Tip',
+    'tip-body': 'Based on current humidity (68%), apply neem-based pesticide in the evening to prevent fungal growth. Best time: <strong>after 5 PM</strong>. Avoid spraying during peak heat hours.',
+    // Recent predictions
+    'rec-pred-title': '📊 Recent Predictions',
+    'rec-pred-sub': 'Your past harvest forecasts',
+    'new-pred-btn': '+ Start New Prediction',
+    // Pages
+    'page-advice-title': '💡 Smart Farm Advice',
+    'page-advice-sub': 'Personalized recommendations based on your farm data and current conditions',
+    'page-pest-title': '🐛 Pest Check',
+    'page-pest-sub': 'AI-powered pest detection and management recommendations',
+    'page-history-title': '📊 My Prediction History',
+    'page-history-sub': 'All your past yield predictions and actual harvest data',
+    'page-income-title': '💰 Income Calculator',
+    'page-income-sub': 'Calculate your estimated farm income based on yield and market prices',
+    'page-market-title': '📈 Market Prices',
+    'page-market-sub': "Today's MSP and market rates for major crops in Tamil Nadu",
+    'page-season-title': '🔮 Season Forecast',
+    'page-season-sub': 'AI-powered seasonal predictions and crop recommendations for Tamil Nadu',
+    // Income calc
+    'ic-lbl-crop': '🌾 Crop',
+    'ic-lbl-area': '📐 Farm Area (ha)',
+    'ic-lbl-yield': '📦 Yield (kg/ha)',
+    'ic-lbl-price': '💹 Price (₹/quintal)',
+    'ic-lbl-seed': '🌱 Seed Cost (₹)',
+    'ic-lbl-input': '💧 Input Cost (₹)',
+    'ic-net-lbl': 'Estimated Net Income',
+    'ic-after-lbl': 'After deducting input costs',
+    'ic-gross-lbl': 'Gross Revenue',
+    'ic-cost-lbl': 'Total Costs',
+    'ic-margin-lbl': 'Profit Margin',
+    // Header titles per page
+    'hdr-predict': ['👋 Good Morning, Farmer!', 'What will you grow today? Get AI-powered yield predictions.'],
+    'hdr-advice': ['💡 Smart Farm Advice', 'Personalized recommendations for your farm'],
+    'hdr-pest': ['🐛 Pest Check', 'AI-powered pest detection and management'],
+    'hdr-history': ['📊 My History', 'All your past predictions and harvest records'],
+    'hdr-income': ['💰 Income Calculator', 'Calculate your estimated farm revenue'],
+    'hdr-market': ['📈 Market Prices', "Today's rates for major crops in Tamil Nadu"],
+    'hdr-season': ['🔮 Season Forecast', 'AI-powered seasonal crop recommendations'],
+    // Toast
+    'toast-lang': 'Language switched to English',
+    'toast-predict': '✅ Prediction complete!',
+  },
+  TA: {
+    'sb-title': 'உழவன் நண்பன்',
+    'sb-sub': 'நுண்ணிய வேளாண் உதவியாளர்',
+    'nav-main': 'முக்கியம்',
+    'nav-predict': 'விளைச்சல் கணிப்பு',
+    'nav-advice': 'அறிவுரை',
+    'nav-pest': 'பூச்சி சோதனை',
+    'nav-records': 'பதிவுகள்',
+    'nav-history': 'என் வரலாறு',
+    'nav-market': 'சந்தை விலை',
+    'nav-season': 'பருவ முன்னறிவிப்பு',
+    'nav-tools': 'கருவிகள்',
+    'nav-income': 'வருமான கணிப்பான்',
+    'nav-mycrops': 'என் பயிர்கள்',
+    'hdr-title': '👋 காலை வணக்கம், விவசாயி!',
+    'hdr-sub': 'இன்று என்ன விதைக்கிறீர்கள்? AI கணிப்பு பெறுங்கள்.',
+    'pest-alert-txt': '⚠️ <strong>பூச்சி அபாய எச்சரிக்கை:</strong> இந்த வாரம் உங்கள் பகுதியில் நெல்லுக்கு அதிக பூஞ்சை அபாயம்.',
+    'stat-yield-lbl': 'சராசரி விளைச்சல் (கி.கி/ஹெக்)',
+    'stat-yield-sub': 'கடைசி கணிப்பு · நெல்',
+    'stat-income-lbl': 'மதிப்பிட்ட வருமானம்',
+    'stat-income-sub': 'MSP விலையில்',
+    'stat-health-lbl': 'பயிர் ஆரோக்கிய மதிப்பெண்',
+    'stat-health-sub': 'நடுத்தரம் – மேம்படலாம்',
+    'stat-preds-lbl': 'மொத்த கணிப்புகள்',
+    'stat-preds-sub': 'இந்த பருவம்',
+    'wiz-title': '🔍 விளைச்சல் கணிப்பு வழிகாட்டி',
+    'wiz-sub': 'AI மூலம் உங்கள் பண்ணை அறுவடை கணிப்பு',
+    'step1-lbl': 'இடம்',
+    'step2-lbl': 'பயிர்',
+    'step3-lbl': 'வானிலை',
+    'step4-lbl': 'மண்',
+    'step5-lbl': 'மதிப்பாய்வு',
+    'lbl-district': '📍 மாவட்டம்',
+    'lbl-season': '📅 பருவம்',
+    'lbl-area': '📐 பண்ணை பரப்பு (ஹெக்)',
+    'lbl-year': '📅 கணிப்பு ஆண்டு',
+    'step2-hint': 'கணிக்க பயிரை தேர்ந்தெடுக்கவும்:',
+    'step3-hint': 'உங்கள் தற்போதைய வானிலையை சரிசெய்யவும்:',
+    'lbl-rainfall': '💧 மழைவீழ்ச்சி (மி.மீ)',
+    'lbl-temp': '🌡️ வெப்பநிலை (°C)',
+    'lbl-humidity': '💦 ஈரப்பதம் (%)',
+    'step4-hint': 'மண் பரிசோதனை முடிவுகளை உள்ளிடவும்:',
+    'lbl-nitrogen': '🌿 நைட்ரஜன் N (கி.கி/ஹெக்)',
+    'lbl-phosphorus': '🔵 பாஸ்பரஸ் P (கி.கி/ஹெக்)',
+    'lbl-potassium': '🟤 பொட்டாசியம் K (கி.கி/ஹெக்)',
+    'lbl-soiltype': '🌱 மண் வகை',
+    'step5-hint': 'உள்ளீடுகளை சரிபார்க்கவும், பின்னர் விளைச்சல் கணிக்கவும்:',
+    'rv-district': 'மாவட்டம்',
+    'rv-season': 'பருவம்',
+    'rv-area': 'பண்ணை பரப்பு',
+    'rv-year': 'ஆண்டு',
+    'rv-crop': 'பயிர்',
+    'rv-rain': 'மழைவீழ்ச்சி',
+    'rv-temp': 'வெப்பநிலை',
+    'rv-hum': 'ஈரப்பதம்',
+    'rv-n': 'நைட்ரஜன்',
+    'rv-p': 'பாஸ்பரஸ்',
+    'rv-k': 'பொட்டாசியம்',
+    'rv-soil': 'மண் வகை',
+    'btn-back': '← பின்னால்',
+    'btn-next': 'அடுத்த படி →',
+    'tip-title': '💡 இன்றைய வேளாண் குறிப்பு',
+    'tip-body': 'தற்போதைய ஈரப்பதம் (68%) அடிப்படையில், பூஞ்சை வளர்ச்சியை தடுக்க மாலையில் வேப்ப பூச்சிக்கொல்லி தெளிக்கவும். சிறந்த நேரம்: <strong>மாலை 5 மணிக்கு பிறகு</strong>.',
+    'rec-pred-title': '📊 சமீபத்திய கணிப்புகள்',
+    'rec-pred-sub': 'உங்கள் கடந்த கால அறுவடை கணிப்புகள்',
+    'new-pred-btn': '+ புதிய கணிப்பு தொடங்கு',
+    'page-advice-title': '💡 நுண்ணிய வேளாண் அறிவுரை',
+    'page-advice-sub': 'உங்கள் பண்ணை தரவு மற்றும் தற்போதைய நிலைமைகளின் அடிப்படையில் பரிந்துரைகள்',
+    'page-pest-title': '🐛 பூச்சி சோதனை',
+    'page-pest-sub': 'AI மூலம் பூச்சி கண்டறிதல் மற்றும் மேலாண்மை பரிந்துரைகள்',
+    'page-history-title': '📊 என் கணிப்பு வரலாறு',
+    'page-history-sub': 'உங்கள் அனைத்து கடந்த கால விளைச்சல் கணிப்புகள் மற்றும் அறுவடை தரவு',
+    'page-income-title': '💰 வருமான கணிப்பான்',
+    'page-income-sub': 'விளைச்சல் மற்றும் சந்தை விலைகளின் அடிப்படையில் பண்ணை வருமானத்தை கணிக்கவும்',
+    'page-market-title': '📈 சந்தை விலைகள்',
+    'page-market-sub': 'தமிழ்நாட்டில் முக்கிய பயிர்களுக்கான இன்றைய MSP மற்றும் சந்தை விலைகள்',
+    'page-season-title': '🔮 பருவ முன்னறிவிப்பு',
+    'page-season-sub': 'தமிழ்நாட்டிற்கான AI மூலம் பருவகால கணிப்புகள் மற்றும் பயிர் பரிந்துரைகள்',
+    'ic-lbl-crop': '🌾 பயிர்',
+    'ic-lbl-area': '📐 பண்ணை பரப்பு (ஹெக்)',
+    'ic-lbl-yield': '📦 விளைச்சல் (கி.கி/ஹெக்)',
+    'ic-lbl-price': '💹 விலை (₹/குவிண்டால்)',
+    'ic-lbl-seed': '🌱 விதை செலவு (₹)',
+    'ic-lbl-input': '💧 உள்ளீட்டு செலவு (₹)',
+    'ic-net-lbl': 'மதிப்பிட்ட நிகர வருமானம்',
+    'ic-after-lbl': 'உள்ளீட்டு செலவுகளை கழித்த பிறகு',
+    'ic-gross-lbl': 'மொத்த வருவாய்',
+    'ic-cost-lbl': 'மொத்த செலவுகள்',
+    'ic-margin-lbl': 'லாப விகிதம்',
+    'hdr-predict': ['👋 காலை வணக்கம், விவசாயி!', 'இன்று என்ன விதைக்கிறீர்கள்? AI கணிப்பு பெறுங்கள்.'],
+    'hdr-advice': ['💡 நுண்ணிய வேளாண் அறிவுரை', 'உங்கள் பண்ணைக்கான தனிப்பயன் பரிந்துரைகள்'],
+    'hdr-pest': ['🐛 பூச்சி சோதனை', 'AI மூலம் பூச்சி கண்டறிதல் மற்றும் மேலாண்மை'],
+    'hdr-history': ['📊 என் வரலாறு', 'உங்கள் அனைத்து கணிப்புகள் மற்றும் அறுவடை பதிவுகள்'],
+    'hdr-income': ['💰 வருமான கணிப்பான்', 'உங்கள் மதிப்பிட்ட பண்ணை வருவாயை கணிக்கவும்'],
+    'hdr-market': ['📈 சந்தை விலைகள்', 'தமிழ்நாட்டில் முக்கிய பயிர்களுக்கான இன்றைய விலைகள்'],
+    'hdr-season': ['🔮 பருவ முன்னறிவிப்பு', 'AI மூலம் பருவகால பயிர் பரிந்துரைகள்'],
+    'toast-lang': 'மொழி தமிழுக்கு மாறியது',
+    'toast-predict': '✅ கணிப்பு முடிந்தது!',
+  },
+  HI: {
+    'sb-title': 'उझावन नंबन',
+    'sb-sub': 'स्मार्ट खेत सहायक',
+    'nav-main': 'मुख्य',
+    'nav-predict': 'उपज भविष्यवाणी',
+    'nav-advice': 'स्मार्ट सलाह',
+    'nav-pest': 'कीट जाँच',
+    'nav-records': 'रिकॉर्ड',
+    'nav-history': 'मेरा इतिहास',
+    'nav-market': 'बाजार भाव',
+    'nav-season': 'मौसम पूर्वानुमान',
+    'nav-tools': 'उपकरण',
+    'nav-income': 'आय कैलकुलेटर',
+    'nav-mycrops': 'मेरी फसलें',
+    'hdr-title': '👋 सुप्रभात, किसान!',
+    'hdr-sub': 'आज क्या उगाएंगे? AI से तुरंत उपज भविष्यवाणी पाएं।',
+    'pest-alert-txt': '⚠️ <strong>कीट जोखिम चेतावनी:</strong> इस सप्ताह आपके क्षेत्र में धान के लिए ब्लास्ट फंगस का उच्च खतरा।',
+    'stat-yield-lbl': 'औसत उपज (कि.ग्रा/हेक्.)',
+    'stat-yield-sub': 'अंतिम भविष्यवाणी · धान',
+    'stat-income-lbl': 'अनुमानित आय',
+    'stat-income-sub': 'MSP दरों पर',
+    'stat-health-lbl': 'फसल स्वास्थ्य स्कोर',
+    'stat-health-sub': 'मध्यम – सुधार संभव',
+    'stat-preds-lbl': 'कुल भविष्यवाणियां',
+    'stat-preds-sub': 'इस मौसम में',
+    'wiz-title': '🔍 उपज भविष्यवाणी विज़ार्ड',
+    'wiz-sub': 'आपके खेत के लिए AI फसल पूर्वानुमान',
+    'step1-lbl': 'स्थान',
+    'step2-lbl': 'फसल',
+    'step3-lbl': 'मौसम',
+    'step4-lbl': 'मिट्टी',
+    'step5-lbl': 'समीक्षा',
+    'lbl-district': '📍 जिला',
+    'lbl-season': '📅 मौसम',
+    'lbl-area': '📐 खेत क्षेत्र (हेक्.)',
+    'lbl-year': '📅 भविष्यवाणी वर्ष',
+    'step2-hint': 'भविष्यवाणी के लिए फसल चुनें:',
+    'step3-hint': 'अपने मौसम के अनुसार समायोजित करें:',
+    'lbl-rainfall': '💧 वर्षा (मि.मी.)',
+    'lbl-temp': '🌡️ तापमान (°C)',
+    'lbl-humidity': '💦 आर्द्रता (%)',
+    'step4-hint': 'मृदा परीक्षण परिणाम दर्ज करें या डिफ़ॉल्ट उपयोग करें:',
+    'lbl-nitrogen': '🌿 नाइट्रोजन N (कि.ग्रा/हेक्.)',
+    'lbl-phosphorus': '🔵 फास्फोरस P (कि.ग्रा/हेक्.)',
+    'lbl-potassium': '🟤 पोटेशियम K (कि.ग्रा/हेक्.)',
+    'lbl-soiltype': '🌱 मिट्टी का प्रकार',
+    'step5-hint': 'इनपुट की समीक्षा करें, फिर उपज भविष्यवाणी पर क्लिक करें:',
+    'rv-district': 'जिला',
+    'rv-season': 'मौसम',
+    'rv-area': 'खेत क्षेत्र',
+    'rv-year': 'वर्ष',
+    'rv-crop': 'फसल',
+    'rv-rain': 'वर्षा',
+    'rv-temp': 'तापमान',
+    'rv-hum': 'आर्द्रता',
+    'rv-n': 'नाइट्रोजन',
+    'rv-p': 'फास्फोरस',
+    'rv-k': 'पोटेशियम',
+    'rv-soil': 'मिट्टी का प्रकार',
+    'btn-back': '← वापस',
+    'btn-next': 'अगला चरण →',
+    'tip-title': '💡 आज की कृषि टिप',
+    'tip-body': 'वर्तमान आर्द्रता (68%) के आधार पर, फंगल वृद्धि को रोकने के लिए शाम को नीम-आधारित कीटनाशक का छिड़काव करें। सबसे अच्छा समय: <strong>शाम 5 बजे के बाद</strong>।',
+    'rec-pred-title': '📊 हाल की भविष्यवाणियां',
+    'rec-pred-sub': 'आपके पिछले फसल पूर्वानुमान',
+    'new-pred-btn': '+ नई भविष्यवाणी शुरू करें',
+    'page-advice-title': '💡 स्मार्ट खेत सलाह',
+    'page-advice-sub': 'आपके खेत के डेटा और वर्तमान स्थितियों पर आधारित व्यक्तिगत सिफारिशें',
+    'page-pest-title': '🐛 कीट जाँच',
+    'page-pest-sub': 'AI द्वारा कीट पहचान और प्रबंधन सिफारिशें',
+    'page-history-title': '📊 मेरा भविष्यवाणी इतिहास',
+    'page-history-sub': 'आपकी सभी पिछली उपज भविष्यवाणियां और वास्तविक फसल डेटा',
+    'page-income-title': '💰 आय कैलकुलेटर',
+    'page-income-sub': 'उपज और बाजार भावों के आधार पर खेत की आय का अनुमान लगाएं',
+    'page-market-title': '📈 बाजार भाव',
+    'page-market-sub': 'तमिलनाडु में प्रमुख फसलों के आज के MSP और बाजार भाव',
+    'page-season-title': '🔮 मौसम पूर्वानुमान',
+    'page-season-sub': 'तमिलनाडु के लिए AI मौसमी भविष्यवाणियां और फसल सिफारिशें',
+    'ic-lbl-crop': '🌾 फसल',
+    'ic-lbl-area': '📐 खेत क्षेत्र (हेक्.)',
+    'ic-lbl-yield': '📦 उपज (कि.ग्रा/हेक्.)',
+    'ic-lbl-price': '💹 मूल्य (₹/क्विंटल)',
+    'ic-lbl-seed': '🌱 बीज लागत (₹)',
+    'ic-lbl-input': '💧 इनपुट लागत (₹)',
+    'ic-net-lbl': 'अनुमानित शुद्ध आय',
+    'ic-after-lbl': 'इनपुट लागत घटाने के बाद',
+    'ic-gross-lbl': 'सकल राजस्व',
+    'ic-cost-lbl': 'कुल लागत',
+    'ic-margin-lbl': 'लाभ मार्जिन',
+    'hdr-predict': ['👋 सुप्रभात, किसान!', 'आज क्या उगाएंगे? AI से तुरंत उपज भविष्यवाणी पाएं।'],
+    'hdr-advice': ['💡 स्मार्ट खेत सलाह', 'आपके खेत के लिए व्यक्तिगत सिफारिशें'],
+    'hdr-pest': ['🐛 कीट जाँच', 'AI द्वारा कीट पहचान और प्रबंधन'],
+    'hdr-history': ['📊 मेरा इतिहास', 'आपकी सभी भविष्यवाणियां और फसल रिकॉर्ड'],
+    'hdr-income': ['💰 आय कैलकुलेटर', 'अपनी अनुमानित खेत आय की गणना करें'],
+    'hdr-market': ['📈 बाजार भाव', 'तमिलनाडु में प्रमुख फसलों के आज के भाव'],
+    'hdr-season': ['🔮 मौसम पूर्वानुमान', 'AI मौसमी फसल सिफारिशें'],
+    'toast-lang': 'भाषा हिंदी में बदली गई',
+    'toast-predict': '✅ भविष्यवाणी पूर्ण!',
+  }
+};
+
+let currentLang = 'EN';
+
+// Map of translation keys to DOM selectors/element IDs
+const domMap = [
+  { key: 'sb-title', sel: '.sb-brand h1' },
+  { key: 'sb-sub', sel: '.sb-brand p' },
+  { key: 'nav-main', selAll: '.nav-grp', idx: 0 },
+  { key: 'nav-records', selAll: '.nav-grp', idx: 1 },
+  { key: 'nav-tools', selAll: '.nav-grp', idx: 2 },
+  { key: 'hdr-title', id: 'hdr-title' },
+  { key: 'hdr-sub', id: 'hdr-sub' },
+  { key: 'stat-yield-lbl', selAll: '.stat-lbl', idx: 0 },
+  { key: 'stat-yield-sub', selAll: '.stat-sub', idx: 0 },
+  { key: 'stat-income-lbl', selAll: '.stat-lbl', idx: 1 },
+  { key: 'stat-income-sub', selAll: '.stat-sub', idx: 1 },
+  { key: 'stat-health-lbl', selAll: '.stat-lbl', idx: 2 },
+  { key: 'stat-health-sub', selAll: '.stat-sub', idx: 2 },
+  { key: 'stat-preds-lbl', selAll: '.stat-lbl', idx: 3 },
+  { key: 'stat-preds-sub', selAll: '.stat-sub', idx: 3 },
+  { key: 'wiz-title', sel: '#wizard-panel .panel-hdr h3' },
+  { key: 'wiz-sub', sel: '#wizard-panel .panel-hdr p' },
+  { key: 'step1-lbl', sel: '#si1 .step-lbl' },
+  { key: 'step2-lbl', sel: '#si2 .step-lbl' },
+  { key: 'step3-lbl', sel: '#si3 .step-lbl' },
+  { key: 'step4-lbl', sel: '#si4 .step-lbl' },
+  { key: 'step5-lbl', sel: '#si5 .step-lbl' },
+  { key: 'step2-hint', sel: '#fs2 > p' },
+  { key: 'step3-hint', sel: '#fs3 > p' },
+  { key: 'step4-hint', sel: '#fs4 > p' },
+  { key: 'step5-hint', sel: '#fs5 > p' },
+  { key: 'tip-title', sel: '.tip-hdr h4' },
+  { key: 'tip-body', sel: '.tip-body', html: true },
+  { key: 'rec-pred-title', sel: '#page-predict .right-col .panel .panel-hdr h3' },
+  { key: 'rec-pred-sub', sel: '#page-predict .right-col .panel .panel-hdr p' },
+  { key: 'new-pred-btn', sel: '.new-pred-btn' },
+  { key: 'page-advice-title', sel: '#page-advice .page-title h2' },
+  { key: 'page-advice-sub', sel: '#page-advice .page-title p' },
+  { key: 'page-pest-title', sel: '#page-pest .page-title h2' },
+  { key: 'page-pest-sub', sel: '#page-pest .page-title p' },
+  { key: 'page-history-title', sel: '#page-history .page-title h2' },
+  { key: 'page-history-sub', sel: '#page-history .page-title p' },
+  { key: 'page-income-title', sel: '#page-income .page-title h2' },
+  { key: 'page-income-sub', sel: '#page-income .page-title p' },
+  { key: 'page-market-title', sel: '#page-market .page-title h2' },
+  { key: 'page-market-sub', sel: '#page-market .page-title p' },
+  { key: 'page-season-title', sel: '#page-season .page-title h2' },
+  { key: 'page-season-sub', sel: '#page-season .page-title p' },
+  { key: 'ic-net-lbl', sel: '.income-result > div:first-child' },
+  { key: 'ic-after-lbl', sel: '.income-lbl' },
+  { key: 'ic-gross-lbl', selAll: '.ib-lbl', idx: 0 },
+  { key: 'ic-cost-lbl', selAll: '.ib-lbl', idx: 1 },
+  { key: 'ic-margin-lbl', selAll: '.ib-lbl', idx: 2 },
+];
+
+// Nav items: text nodes need special handling (they include emoji spans)
+const navItems = [
+  { key: 'nav-predict', navIdx: 0 },
+  { key: 'nav-advice', navIdx: 1 },
+  { key: 'nav-pest', navIdx: 2 },
+  { key: 'nav-history', navIdx: 3 },
+  { key: 'nav-market', navIdx: 4 },
+  { key: 'nav-season', navIdx: 5 },
+  { key: 'nav-income', navIdx: 6 },
+  { key: 'nav-mycrops', navIdx: 7 },
+];
+
+// Form labels - identified by their parent structure
+const formLabels = [
+  { key: 'lbl-district', sel: '#fs1 .form-group:nth-child(1) .form-label' },
+  { key: 'lbl-season', sel: '#fs1 .form-group:nth-child(2) .form-label' },
+  { key: 'lbl-area', sel: '#fs1 .form-group:nth-child(3) .form-label' },
+  { key: 'lbl-year', sel: '#fs1 .form-group:nth-child(4) .form-label' },
+  { key: 'lbl-rainfall', sel: '#fs3 .sl-row:nth-child(2) label' },
+  { key: 'lbl-temp', sel: '#fs3 .sl-row:nth-child(3) label' },
+  { key: 'lbl-humidity', sel: '#fs3 .sl-row:nth-child(4) label' },
+  { key: 'lbl-nitrogen', sel: '#fs4 .sl-row:nth-child(2) label' },
+  { key: 'lbl-phosphorus', sel: '#fs4 .sl-row:nth-child(3) label' },
+  { key: 'lbl-potassium', sel: '#fs4 .sl-row:nth-child(4) label' },
+  { key: 'lbl-soiltype', sel: '#fs4 .form-label' },
+  { key: 'ic-lbl-crop', sel: '#page-income .form-group:nth-child(1) .form-label' },
+  { key: 'ic-lbl-area', sel: '#page-income .form-group:nth-child(2) .form-label' },
+  { key: 'ic-lbl-yield', sel: '#page-income .form-group:nth-child(3) .form-label' },
+  { key: 'ic-lbl-price', sel: '#page-income .form-group:nth-child(4) .form-label' },
+  { key: 'ic-lbl-seed', sel: '#page-income .form-group:nth-child(5) .form-label' },
+  { key: 'ic-lbl-input', sel: '#page-income .form-group:nth-child(6) .form-label' },
+];
+
+// Review table labels
+const rvLabels = ['rv-district','rv-season','rv-area','rv-year','rv-crop','rv-rain','rv-temp','rv-hum','rv-n','rv-p','rv-k','rv-soil'];
+
+function applyTranslations(lang) {
+  const t = translations[lang];
+  if (!t) return;
+
+  // Apply domMap entries
+  domMap.forEach(entry => {
+    let el;
+    if (entry.id) el = document.getElementById(entry.id);
+    else if (entry.sel) el = document.querySelector(entry.sel);
+    else if (entry.selAll) {
+      const all = document.querySelectorAll(entry.selAll);
+      el = all[entry.idx];
+    }
+    if (el && t[entry.key] !== undefined) {
+      if (entry.html) el.innerHTML = t[entry.key];
+      else el.textContent = t[entry.key];
+    }
+  });
+
+  // Apply form labels
+  formLabels.forEach(entry => {
+    const el = document.querySelector(entry.sel);
+    if (el && t[entry.key]) el.textContent = t[entry.key];
+  });
+
+  // Apply nav item text (preserve emoji span)
+  const navEls = document.querySelectorAll('.nav-item');
+  navItems.forEach(ni => {
+    const el = navEls[ni.navIdx];
+    if (!el || !t[ni.key]) return;
+    const icon = el.querySelector('.nav-icon');
+    const badge = el.querySelector('.nav-badge');
+    el.childNodes.forEach(n => { if (n.nodeType === 3) n.textContent = t[ni.key]; });
+    // If no text node found, try appending after icon
+    const textNodes = Array.from(el.childNodes).filter(n => n.nodeType === 3);
+    if (textNodes.length === 0 && icon) {
+      icon.insertAdjacentText('afterend', t[ni.key]);
+    } else {
+      textNodes.forEach((n, i) => { if (i === 0) n.textContent = t[ni.key]; });
+    }
+  });
+
+  // Apply review table labels
+  rvLabels.forEach(key => {
+    // find the td that previously had the EN label text - use data attribute approach
+    const tds = document.querySelectorAll('#fs5 .rv-table td:first-child');
+    const rvKeyMap = {
+      'rv-district': 0, 'rv-season': 1, 'rv-area': 2, 'rv-year': 3,
+      'rv-crop': 4, 'rv-rain': 5, 'rv-temp': 6, 'rv-hum': 7,
+      'rv-n': 8, 'rv-p': 9, 'rv-k': 10, 'rv-soil': 11
+    };
+    const idx = rvKeyMap[key];
+    if (tds[idx] && t[key]) tds[idx].textContent = t[key];
+  });
+
+  // Update pest alert
+  const pestAlertTxt = document.querySelector('#pest-alert');
+  if (pestAlertTxt && t['pest-alert-txt']) {
+    const btn = pestAlertTxt.querySelector('.ax');
+    pestAlertTxt.innerHTML = t['pest-alert-txt'] + ' ';
+    if (btn) pestAlertTxt.appendChild(btn);
+  }
+
+  // Update btn-back and btn-next if not on last step
+  const btnBack = document.getElementById('btn-back');
+  const btnNext = document.getElementById('btn-next');
+  if (btnBack && t['btn-back']) btnBack.textContent = t['btn-back'];
+  if (btnNext && t['btn-next'] && curStep < STEPS) btnNext.textContent = t['btn-next'];
+}
+
+function setLang(el, lang) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const langMap = { 'EN': 'EN', 'தமிழ்': 'TA', 'हि': 'HI' };
+  currentLang = langMap[lang] || 'EN';
+  applyTranslations(currentLang);
+  showToast(translations[currentLang]['toast-lang'] || 'Language switched');
+}
+
+// ---- MODAL ----
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+});
+
+// ---- TOAST ----
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
